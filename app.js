@@ -775,8 +775,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 badge.className = `concept-node-badge ${statusName}`;
                 badge.textContent = statusName === 'completed' ? 'Completed' : statusName === 'current' ? 'Current' : 'Locked';
             }
+            row.dataset.locked = String(statusName === 'locked');
+            row.setAttribute('aria-disabled', String(statusName === 'locked'));
+            if (row instanceof HTMLAnchorElement) row.tabIndex = statusName === 'locked' ? -1 : 0;
         });
     };
+
+    document.addEventListener('click', (event) => {
+        const lockedConcept = event.target.closest('.concept-node-row[data-locked="true"]');
+        if (!lockedConcept) return;
+        event.preventDefault();
+        event.stopPropagation();
+    }, true);
 
     const formatMinutes = (minutes) => {
         if (!minutes || minutes <= 0) return '0 minutes';
