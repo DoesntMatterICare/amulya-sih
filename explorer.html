@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorer Hub | Luma</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="supabase-features.js"></script>
+
+    <style>
+        /* Scoped overrides for the redesigned premium Explorer Hub page */
+        html, body {
+            height: auto;
+            overflow-x: hidden;
+            overflow-y: auto;
+            background-color: #FCFBFF;
+            color: #2E2433;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .explorer-body .dash-sidebar {
+            width: 280px;
+            padding: 2.5rem 1.5rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-right: 1px solid var(--color-neutral);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+        .explorer-body .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3.5rem;
+            padding-left: 0.5rem;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+        }
+        .explorer-body .sidebar-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            flex-grow: 1;
+        }
+        .explorer-body .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0.9rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #2D2435;
+            background-color: var(--color-white);
+            transition: var(--transition-smooth);
+            text-decoration: none;
+        }
+        .explorer-body .sidebar-item svg {
+            color: #A775C9;
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .explorer-body .sidebar-item.active {
+            background-color: #A775C9;
+            color: var(--color-white) !important;
+            font-weight: 600;
+            box-shadow: var(--shadow-button);
+        }
+        .explorer-body .sidebar-item.active svg {
+            color: var(--color-white);
+        }
+        .explorer-body .sidebar-item:not(.active):hover {
+            background-color: rgba(167, 117, 201, 0.08) !important;
+            color: #A775C9 !important;
+            transform: translateX(4px);
+        }
+        
+        .explorer-body .sidebar-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.9rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #2D2435;
+            background-color: var(--color-white);
+            transition: var(--transition-smooth);
+            margin-top: auto;
+            text-decoration: none;
+        }
+        .explorer-body .sidebar-profile svg {
+            color: #A775C9;
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+        }
+        .explorer-body .sidebar-profile.active {
+            background-color: #A775C9;
+            color: var(--color-white) !important;
+            font-weight: 600;
+            box-shadow: var(--shadow-button);
+        }
+        .explorer-body .sidebar-profile.active svg {
+            color: var(--color-white);
+        }
+        .explorer-body .sidebar-profile:not(.active):hover {
+            background-color: rgba(167, 117, 201, 0.08);
+            color: #A775C9;
+        }
+
+        /* Centered Main Content Area */
+        .explorer-body .dash-main {
+            margin-left: 280px;
+            padding: 4rem 48px; /* Horizontal padding 48px */
+            max-width: 1160px;
+            margin-right: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 64px; /* Spacing between major layout sections is at least 64px */
+            min-height: 100vh;
+            height: auto;
+            overflow: visible;
+        }
+
+        .section-header-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .section-main-heading {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 2.8rem;
+            color: #2E2433;
+            margin: 0;
+        }
+        .section-sub-heading {
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            font-size: 1.05rem;
+            color: #8c8195;
+            margin: 0;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+
+        /* Search input bar row styling */
+        .search-bar-row-redesigned {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 640px) {
+            .search-bar-row-redesigned {
+                flex-direction: column;
+            }
+        }
+        .search-input-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+        .search-input-field {
+            width: 100%;
+            height: 54px;
+            padding: 0 1.5rem 0 3.2rem;
+            background-color: #FFFFFF;
+            border: 1.5px solid #E2D9D9;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            color: #2E2433;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            transition: var(--transition-smooth);
+        }
+        .search-input-field:focus {
+            border-color: #A775C9;
+            outline: none;
+            box-shadow: 0 6px 20px rgba(167, 117, 201, 0.1);
+        }
+        .search-input-icon {
+            position: absolute;
+            left: 1.4rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #A775C9;
+            pointer-events: none;
+        }
+
+        /* Buttons Styling to strictly match guidelines */
+        .btn-luma-primary {
+            background-color: #A775C9;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 50px;
+            padding: 0.85rem 2rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500; /* Inter Medium */
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(167, 117, 201, 0.25);
+        }
+        .btn-luma-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(167, 117, 201, 0.35);
+        }
+
+        .btn-luma-secondary {
+            background-color: #FFFFFF;
+            border: 1.5px solid #A775C9;
+            color: #A775C9;
+            border-radius: 50px;
+            padding: 0.85rem 2rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500; /* Inter Medium */
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-luma-secondary:hover {
+            background-color: #A775C9;
+            color: #FFFFFF;
+            transform: translateY(-2px);
+        }
+
+        .btn-luma-joined {
+            background-color: rgba(167, 117, 201, 0.15);
+            color: #A775C9;
+            border: none;
+            border-radius: 50px;
+            padding: 0.85rem 2rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: default;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* SECTION 1: Explore Communities Grid */
+        .explore-communities-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            width: 100%;
+        }
+        @media (max-width: 1024px) {
+            .explore-communities-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 640px) {
+            .explore-communities-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .comm-premium-card-redesigned {
+            background-color: #FFFFFF;
+            border: 1px solid #E2D9D9;
+            border-radius: 24px; /* Large rounded corners 24px */
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02); /* Soft premium shadow */
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 420px;
+        }
+        .comm-premium-card-redesigned:hover {
+            transform: translateY(-6px); /* Hover animation lift slightly */
+            box-shadow: 0 12px 30px rgba(167, 117, 201, 0.12); /* Stronger shadow */
+            border-color: #D2AFC2;
+        }
+        .comm-card-banner {
+            height: 120px;
+            width: 100%;
+            position: relative;
+            background: linear-gradient(135deg, #DEAFC2 0%, #D480BB 50%, #A775C9 100%);
+        }
+        .comm-card-icon-overlay {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background-color: #FFFFFF;
+            border: 4px solid #FFFFFF;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            position: absolute;
+            bottom: -32px;
+            left: 24px;
+            z-index: 2;
+        }
+        .comm-card-content {
+            padding: 24px; /* Premium padding 24px */
+            padding-top: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex-grow: 1;
+        }
+        .comm-card-title {
+            font-family: 'DM Serif Display', serif;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: #2E2433;
+            margin: 0;
+        }
+        .comm-card-desc {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #5d5167;
+            margin: 0;
+            flex-grow: 1;
+        }
+        .comm-card-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #8c8195;
+            margin-top: 0.5rem;
+        }
+        .comm-card-stars {
+            color: #A775C9; /* Lavender colored stars */
+            letter-spacing: 2px;
+            font-size: 0.95rem;
+        }
+        .comm-card-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 1rem;
+        }
+        .comm-card-actions .btn-luma-secondary,
+        .comm-card-actions .btn-luma-primary,
+        .comm-card-actions .btn-luma-joined {
+            flex-grow: 1;
+            padding: 0.7rem 0;
+            font-size: 0.88rem;
+        }
+
+        /* SECTION 2: Trending Discussions */
+        .discussions-list-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+        }
+        .discussion-premium-card-item {
+            background-color: #FFFFFF;
+            border: 1px solid #E2D9D9;
+            border-radius: 24px; /* Rounded corners 24px */
+            padding: 24px; /* Premium padding 24px */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02); /* Soft shadow */
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .discussion-premium-card-item:hover {
+            border-color: #A775C9;
+            box-shadow: 0 8px 25px rgba(167, 117, 201, 0.06);
+        }
+        .disc-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .disc-user-profile-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .disc-avatar-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(167, 117, 201, 0.15);
+        }
+        .disc-user-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .disc-user-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #2E2433;
+        }
+        .disc-community-meta {
+            font-size: 0.8rem;
+            color: #8c8195;
+        }
+        .disc-community-name-span {
+            color: #A775C9;
+            font-weight: 600;
+        }
+        .disc-title-text {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.35rem;
+            color: #2E2433;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .disc-preview-body {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #5d5167;
+            margin: 0;
+        }
+        .disc-footer-actions-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(226, 217, 217, 0.5);
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+        }
+        .disc-stats-box {
+            display: flex;
+            gap: 20px;
+        }
+        .disc-stat-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.88rem;
+            color: #8c8195;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .disc-stat-btn svg {
+            color: #A775C9; /* Lavender colored icons */
+            width: 18px;
+            height: 18px;
+        }
+        .disc-stat-btn:hover {
+            color: #A775C9;
+        }
+        .disc-save-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.88rem;
+            color: #8c8195;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .disc-save-btn svg {
+            color: #A775C9;
+            width: 18px;
+            height: 18px;
+        }
+        .disc-save-btn:hover {
+            color: #A775C9;
+        }
+
+        /* SECTION 3: Featured Student Projects Grid */
+        .featured-projects-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            .featured-projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .project-premium-card-redesigned {
+            background-color: #FFFFFF;
+            border: 1px solid #E2D9D9;
+            border-radius: 24px; /* Rounded corners 24px */
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            min-height: 380px;
+        }
+        .project-premium-card-redesigned:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(167, 117, 201, 0.1);
+            border-color: #A775C9;
+        }
+        .project-thumbnail-wrapper {
+            height: 200px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            background-color: rgba(167, 117, 201, 0.03);
+        }
+        .project-thumbnail-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .project-premium-card-redesigned:hover .project-thumbnail-image {
+            transform: scale(1.05); /* Hover slightly enlarge thumbnail */
+        }
+        .project-card-details {
+            padding: 24px; /* Premium padding 24px */
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            flex-grow: 1;
+        }
+        .project-card-name {
+            font-family: 'DM Serif Display', serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #2E2433;
+            margin: 0;
+        }
+        .project-creator-name {
+            font-size: 0.9rem;
+            color: #8c8195;
+            margin: 0;
+        }
+        .project-stats-row {
+            display: flex;
+            gap: 16px;
+            font-size: 0.85rem;
+            color: #8c8195;
+            align-items: center;
+        }
+        .project-stat-item-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .project-stat-item-badge svg {
+            color: #A775C9;
+            width: 16px;
+            height: 16px;
+        }
+        .project-card-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+
+        /* SECTION 4: Luma AI Recommends card */
+        .ai-recommends-premium-card {
+            background-color: #FFFFFF;
+            border: 1px solid rgba(167, 117, 201, 0.25);
+            border-radius: 24px; /* Large premium rounded card */
+            padding: 32px;
+            box-shadow: 0 8px 30px rgba(167, 117, 201, 0.05);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(167, 117, 201, 0.02) 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            width: 100%;
+        }
+        .ai-recommends-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .ai-recommends-heading-text {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 2rem;
+            color: #2E2433;
+            margin: 0;
+        }
+        .ai-recommends-desc-text {
+            font-size: 1rem;
+            color: #8c8195;
+            margin: 0;
+        }
+        .ai-recommends-rows-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .ai-recommendation-row {
+            display: grid;
+            grid-template-columns: 3fr 6fr 2fr;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            background-color: #FFFFFF;
+            border: 1px solid #E2D9D9;
+            border-radius: 16px;
+            transition: var(--transition-smooth);
+        }
+        .ai-recommendation-row:hover {
+            transform: translateX(4px);
+            border-color: #A775C9;
+            box-shadow: 0 4px 15px rgba(167, 117, 201, 0.05);
+        }
+        @media (max-width: 768px) {
+            .ai-recommendation-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                justify-items: start;
+            }
+        }
+        .ai-rec-name {
+            font-family: 'DM Serif Display', serif;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #2E2433;
+        }
+        .ai-rec-desc {
+            font-size: 0.92rem;
+            color: #5d5167;
+            line-height: 1.5;
+        }
+        .ai-rec-action {
+            justify-self: end;
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .ai-rec-action .btn-luma-primary,
+        .ai-rec-action .btn-luma-joined {
+            padding: 0.65rem 1.75rem;
+            font-size: 0.85rem;
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body class="dash-body explorer-body">
+    <!-- Sidebar Navigation (Maintained exactly as requested) -->
+    <aside class="dash-sidebar">
+        <div>
+            <a href="index.html" class="sidebar-brand">
+                <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGradExplorer" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#D480BB" />
+                            <stop offset="100%" stop-color="#A775C9" />
+                        </linearGradient>
+                    </defs>
+                    <mask id="logoLMaskExplorer">
+                        <rect width="100" height="100" fill="white" />
+                        <path d="M 44,28 H 52 V 58 H 68 V 66 H 44 Z" fill="black" />
+                    </mask>
+                    <path d="M 50,5 C 50,30 30,50 5,50 C 30,50 50,70 50,95 C 50,70 70,50 95,50 C 70,50 50,30 50,5 Z" fill="url(#logoGradExplorer)" mask="url(#logoLMaskExplorer)" />
+                </svg>
+                <span class="logo-text" style="font-size: 1.4rem;">Luma</span>
+            </a>
+
+            <nav class="sidebar-links">
+                <a href="dashboard.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="learning.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <span>Learning Hub</span>
+                </a>
+                <a href="journey.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon></svg>
+                    <span>Journey</span>
+                </a>
+                <a href="explorer.html" class="sidebar-item active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                    <span>Explorer Hub</span>
+                </a>
+                <a href="summary.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <span>Summary</span>
+                </a>
+            </nav>
+        </div>
+
+        <a href="profile.html" class="sidebar-profile">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Profile</span>
+        </a>
+    </aside>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <a href="dashboard.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+            <span>Dashboard</span>
+        </a>
+        <a href="learning.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <span>Learning</span>
+        </a>
+        <a href="journey.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon></svg>
+            <span>Journey</span>
+        </a>
+        <a href="explorer.html" class="mobile-nav-item active">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+            <span>Explorer</span>
+        </a>
+        <a href="profile.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <!-- Main Content Area (Spacious vertical column stacked vertically only) -->
+    <main class="dash-main">
+        
+        <!-- TOP SECTION HEADER & SEARCH INPUT -->
+        <div class="explorer-top-search-section">
+            <div class="section-header-box" style="margin-bottom: 2.5rem;">
+                <h1 class="section-main-heading">Explorer Hub</h1>
+                <p class="section-sub-heading">Discover communities, discussions, projects and like-minded learners.</p>
+            </div>
+
+            <div class="search-bar-row-redesigned">
+                <div class="search-input-wrapper">
+                    <input type="text" id="community-search-input" class="search-input-field" placeholder="Search communities, projects or discussions..." data-testid="explorer-search-input">
+                    <!-- Lucide Search Icon -->
+                    <svg class="search-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+                
+                <div class="explorer-filter-controls" data-testid="explorer-filter-controls">
+                    <select id="explorer-community-filter" aria-label="Filter by community" data-testid="explorer-community-filter"><option value="">All communities</option></select>
+                    <select id="explorer-career-filter" aria-label="Filter by career" data-testid="explorer-career-filter"><option value="">All careers</option></select>
+                    <select id="explorer-skill-filter" aria-label="Filter by skill" data-testid="explorer-skill-filter"><option value="">All skills</option></select>
+                    <select id="explorer-sort-select" aria-label="Sort results" data-testid="explorer-sort-select">
+                        <option value="newest">Newest</option>
+                        <option value="most-discussed">Most discussed</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 1 – EXPLORE COMMUNITIES -->
+        <section id="explore-communities-section" style="display: flex; flex-direction: column; gap: 2rem;">
+            <div class="section-header-box">
+                <h2 class="section-main-heading" style="font-size: 2.2rem;">Explore Communities</h2>
+                <p class="section-sub-heading">Join communities that match your interests, collaborate with like-minded learners, participate in discussions, and grow together.</p>
+            </div>
+
+            <!-- 3-Column Community Cards Grid -->
+            <div class="explore-communities-grid" id="communities-cards-grid">
+                <!-- Card 1: UI/UX Design -->
+                <div class="comm-premium-card-redesigned">
+                    <div class="comm-card-banner">
+                        <div class="comm-card-icon-overlay">🎨</div>
+                    </div>
+                    <div class="comm-card-content">
+                        <h3 class="comm-card-title">UI/UX Design</h3>
+                        <p class="comm-card-desc">Learn Figma, UX Research, Wireframing, Design Systems and Product Design with thousands of learners.</p>
+                        <div class="comm-card-meta-row">
+                            <span class="comm-member-count" style="font-weight: 600;">0 Members</span>
+                            <span class="comm-card-stars">★★★★★</span>
+                        </div>
+                        <div class="comm-card-actions">
+                            <button class="btn-luma-secondary community-open-chat" data-community-name="UI/UX Design" data-testid="community-ui-ux-open-chat">Explore</button>
+                            <button class="btn-luma-joined comm-join-action-btn" data-name="UI/UX Design" data-testid="community-ui-ux-toggle">Joined ✓</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Graphic Design -->
+                <div class="comm-premium-card-redesigned">
+                    <div class="comm-card-banner" style="background: linear-gradient(135deg, #DEAFC2 0%, #D2AFC2 100%);">
+                        <div class="comm-card-icon-overlay">📐</div>
+                    </div>
+                    <div class="comm-card-content">
+                        <h3 class="comm-card-title">Graphic Design</h3>
+                        <p class="comm-card-desc">Typography, poster designs, brand identity structures, vector art layouts and theory systems.</p>
+                        <div class="comm-card-meta-row">
+                            <span class="comm-member-count" style="font-weight: 600;">0 Members</span>
+                            <span class="comm-card-stars">★★★★★</span>
+                        </div>
+                        <div class="comm-card-actions">
+                            <button class="btn-luma-secondary community-open-chat" data-community-name="Graphic Design" data-testid="community-graphic-design-open-chat">Explore</button>
+                            <button class="btn-luma-joined comm-join-action-btn" data-name="Graphic Design" data-testid="community-graphic-design-toggle">Joined ✓</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Full Stack Development -->
+                <div class="comm-premium-card-redesigned">
+                    <div class="comm-card-banner" style="background: linear-gradient(135deg, #D480BB 0%, #A775C9 100%);">
+                        <div class="comm-card-icon-overlay">💻</div>
+                    </div>
+                    <div class="comm-card-content">
+                        <h3 class="comm-card-title">Full Stack Development</h3>
+                        <p class="comm-card-desc">Build web apps from scratch with React, node databases, servers, hosting systems and APIs.</p>
+                        <div class="comm-card-meta-row">
+                            <span class="comm-member-count" style="font-weight: 600;">0 Members</span>
+                            <span class="comm-card-stars">★★★★★</span>
+                        </div>
+                        <div class="comm-card-actions">
+                            <button class="btn-luma-secondary community-open-chat" data-community-name="Full Stack Development" data-testid="community-full-stack-open-chat">Explore</button>
+                            <button class="btn-luma-primary comm-join-action-btn" data-name="Full Stack Development" data-testid="community-full-stack-toggle">Join</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: AI Engineering -->
+                <div class="comm-premium-card-redesigned">
+                    <div class="comm-card-banner" style="background: linear-gradient(135deg, #A775C9 0%, #DEAFC2 100%);">
+                        <div class="comm-card-icon-overlay">🤖</div>
+                    </div>
+                    <div class="comm-card-content">
+                        <h3 class="comm-card-title">AI Engineering</h3>
+                        <p class="comm-card-desc">Dive into neural networks, fine-tuning LLMs, retrieval frameworks, custom agents and pipelines.</p>
+                        <div class="comm-card-meta-row">
+                            <span class="comm-member-count" style="font-weight: 600;">0 Members</span>
+                            <span class="comm-card-stars">★★★★★</span>
+                        </div>
+                        <div class="comm-card-actions">
+                            <button class="btn-luma-secondary community-open-chat" data-community-name="AI Engineering" data-testid="community-ai-engineering-open-chat">Explore</button>
+                            <button class="btn-luma-joined comm-join-action-btn" data-name="AI Engineering" data-testid="community-ai-engineering-toggle">Joined ✓</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Data Science -->
+                <div class="comm-premium-card-redesigned">
+                    <div class="comm-card-banner" style="background: linear-gradient(135deg, #E2D9D9 0%, #D480BB 100%);">
+                        <div class="comm-card-icon-overlay">📊</div>
+                    </div>
+                    <div class="comm-card-content">
+                        <h3 class="comm-card-title">Data Science</h3>
+                        <p class="comm-card-desc">Master Python data analysis, mathematical modelling, data visualisations and analytics engines.</p>
+                        <div class="comm-card-meta-row">
+                            <span class="comm-member-count" style="font-weight: 600;">0 Members</span>
+                            <span class="comm-card-stars">★★★★★</span>
+                        </div>
+                        <div class="comm-card-actions">
+                            <button class="btn-luma-secondary community-open-chat" data-community-name="Data Science" data-testid="community-data-science-open-chat">Explore</button>
+                            <button class="btn-luma-primary comm-join-action-btn" data-name="Data Science" data-testid="community-data-science-toggle">Join</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 6: Cybersecurity -->
+                <div class="comm-premium-card-redesigned">
+                    <div class="comm-card-banner" style="background: linear-gradient(135deg, #DEAFC2 0%, #A775C9 100%);">
+                        <div class="comm-card-icon-overlay">🛡️</div>
+                    </div>
+                    <div class="comm-card-content">
+                        <h3 class="comm-card-title">Cybersecurity</h3>
+                        <p class="comm-card-desc">Learn server hardening, encryption keys, network scan diagnostics and threat mitigation structures.</p>
+                        <div class="comm-card-meta-row">
+                            <span class="comm-member-count" style="font-weight: 600;">0 Members</span>
+                            <span class="comm-card-stars">★★★★★</span>
+                        </div>
+                        <div class="comm-card-actions">
+                            <button class="btn-luma-secondary community-open-chat" data-community-name="Cybersecurity" data-testid="community-cybersecurity-open-chat">Explore</button>
+                            <button class="btn-luma-primary comm-join-action-btn" data-name="Cybersecurity" data-testid="community-cybersecurity-toggle">Join</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="community-chat-section" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div class="section-header-box" style="margin-bottom: 0;">
+                <h2 class="section-main-heading" style="font-size: 2.2rem;">Community Chat</h2>
+                <p class="section-sub-heading">Member-only channels update live through Supabase Realtime.</p>
+            </div>
+            <div class="community-chat-shell" data-testid="community-chat-shell">
+                <aside class="community-chat-controls">
+                    <select id="community-chat-community" aria-label="Chat community" data-testid="community-chat-community-select"></select>
+                    <div id="community-channel-list" class="community-channel-list" data-testid="community-channel-list"></div>
+                </aside>
+                <div class="community-chat-main">
+                    <div class="community-chat-status-bar">
+                        <span id="community-chat-status" class="community-chat-status" data-testid="community-chat-status">Connecting to live chat…</span>
+                        <span id="community-presence-status" class="community-presence-status" data-testid="community-presence-status">0 online</span>
+                    </div>
+                    <div id="community-message-list" class="community-message-list" data-testid="community-message-list"></div>
+                    <div id="community-typing-indicator" class="community-typing-indicator" data-testid="community-typing-indicator" hidden></div>
+                    <form id="community-message-form" class="community-chat-form">
+                        <input id="community-message-input" maxlength="4000" placeholder="Message this channel" required data-testid="community-message-input">
+                        <button type="submit" class="btn-luma-primary" data-testid="community-message-send-button">Send</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2 – TRENDING DISCUSSIONS -->
+        <section id="trending-discussions-section" style="display: flex; flex-direction: column; gap: 2rem;">
+            <div class="section-header-box" style="flex-direction: row; align-items: end; justify-content: space-between; gap: 1rem;">
+                <div>
+                    <h2 class="section-main-heading" style="font-size: 2.2rem;">Trending Discussions</h2>
+                    <p class="section-sub-heading">See what learners are discussing today.</p>
+                </div>
+                <button id="discovery-new-post-button" class="btn-luma-primary" data-testid="discovery-new-post-button">New Discussion</button>
+            </div>
+
+            <!-- Vertical List of Discussion Cards (LinkedIn style) -->
+            <div class="discussions-list-stack" id="discovery-feed-container" data-testid="discovery-feed-container">
+                <!-- Discussion Card 1 -->
+                <div class="discussion-premium-card-item" data-post-id="11111111-1111-4111-8111-111111111111">
+                    <div class="disc-header-row">
+                        <div class="disc-user-profile-box">
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background-color: #D480BB; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #FFFFFF;">SK</div>
+                            <div class="disc-user-details">
+                                <span class="disc-user-name">Sarah K.</span>
+                                <span class="disc-community-meta">posted in <span class="disc-community-name-span">UI/UX Design</span> • 2 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="disc-title-text">"How do you improve low-fidelity wireframes before moving to high-fidelity?"</h3>
+                    <p class="disc-preview-body">I often struggle to align component groupings cleanly and keep layout proportions balanced before laying out high-fidelity mockups. What checklist points do you follow?</p>
+                    <div class="disc-footer-actions-row">
+                        <div class="disc-stats-box">
+                            <button class="disc-stat-btn" onclick="alert('Liked discussion!');">
+                                <!-- Lucide Heart Icon -->
+                                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                94
+                            </button>
+                            <button class="disc-stat-btn" onclick="alert('Opening comments...');">
+                                <!-- Lucide Message Square Icon -->
+                                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                28
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <button class="disc-save-btn" data-post-id="11111111-1111-4111-8111-111111111111" data-testid="discovery-save-post-one">
+                                <!-- Lucide Bookmark Icon -->
+                                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                <span>Save</span>
+                            </button>
+                            <button class="btn-luma-secondary" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;" onclick="alert('Loading full discussion thread...');">View Discussion →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Discussion Card 2 -->
+                <div class="discussion-premium-card-item" data-post-id="22222222-2222-4222-8222-222222222222">
+                    <div class="disc-header-row">
+                        <div class="disc-user-profile-box">
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background-color: #A775C9; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #FFFFFF;">AR</div>
+                            <div class="disc-user-details">
+                                <span class="disc-user-name">Arjun M.</span>
+                                <span class="disc-community-meta">posted in <span class="disc-community-name-span">AI Engineering</span> • 4 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="disc-title-text">"Best roadmaps for beginners learning generative AI in 2026?"</h3>
+                    <p class="disc-preview-body">Looking for a structured timeline to learn neural networks and LLMs from absolute scratch. Are there recommended interactive notebooks or custom agents courses?</p>
+                    <div class="disc-footer-actions-row">
+                        <div class="disc-stats-box">
+                            <button class="disc-stat-btn" onclick="alert('Liked!');">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                142
+                            </button>
+                            <button class="disc-stat-btn" onclick="alert('Opening comments...');">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                56
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <button class="disc-save-btn" data-post-id="22222222-2222-4222-8222-222222222222" data-testid="discovery-save-post-two">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                <span>Save</span>
+                            </button>
+                            <button class="btn-luma-secondary" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;" onclick="alert('Loading full discussion thread...');">View Discussion →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Discussion Card 3 -->
+                <div class="discussion-premium-card-item" data-post-id="33333333-3333-4333-8333-333333333333">
+                    <div class="disc-header-row">
+                        <div class="disc-user-profile-box">
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background-color: #D2AFC2; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #2E2433;">EM</div>
+                            <div class="disc-user-details">
+                                <span class="disc-user-name">Emma S.</span>
+                                <span class="disc-community-meta">posted in <span class="disc-community-name-span">Full Stack Development</span> • 6 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="disc-title-text">"How should beginners structure a portfolio project repository?"</h3>
+                    <p class="disc-preview-body">Is it better to highlight architectural layout drawings inside README markdown, or should I host interactive demo deployments directly at the top of the repository details?</p>
+                    <div class="disc-footer-actions-row">
+                        <div class="disc-stats-box">
+                            <button class="disc-stat-btn" onclick="alert('Liked!');">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                78
+                            </button>
+                            <button class="disc-stat-btn" onclick="alert('Opening comments...');">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                33
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <button class="disc-save-btn" data-post-id="33333333-3333-4333-8333-333333333333" data-testid="discovery-save-post-three">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                <span>Save</span>
+                            </button>
+                            <button class="btn-luma-secondary" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;" onclick="alert('Loading full discussion thread...');">View Discussion →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3 – FEATURED STUDENT PROJECTS -->
+        <section id="featured-projects-section" style="display: flex; flex-direction: column; gap: 2rem;">
+            <div class="section-header-box">
+                <h2 class="section-main-heading" style="font-size: 2.2rem;">Featured Student Projects</h2>
+                <p class="section-sub-heading">Projects created by the Luma community.</p>
+            </div>
+
+            <div class="featured-projects-grid" id="featured-projects-grid" data-testid="featured-projects-grid">
+                <p class="learning-library-status">Loading student projects…</p>
+            </div>
+        </section>
+
+        <!-- SECTION 4 – LUMA AI RECOMMENDS -->
+        <section id="luma-ai-recommends-section" style="display: flex; flex-direction: column; gap: 2rem; margin-bottom: 2rem;">
+            <div class="ai-recommends-premium-card">
+                <div class="ai-recommends-header">
+                    <h2 class="ai-recommends-heading-text">✨ Luma AI Recommends</h2>
+                    <p class="ai-recommends-desc-text">Based on your interests, we think you'll love these communities.</p>
+                </div>
+
+                <div class="ai-recommends-rows-list">
+                    <!-- Row 1: Product Designers -->
+                    <div class="ai-recommendation-row">
+                        <div class="ai-rec-name">Product Designers</div>
+                        <div class="ai-rec-desc">Learn Design Thinking, prototyping systems, UX research methods, and case-studies.</div>
+                        <div class="ai-rec-action">
+                            <button class="btn-luma-primary ai-rec-btn-action" data-group="Product Designers" onclick="alert('Joined Product Designers suggested community!'); this.textContent='Joined ✓'; this.className='btn-luma-joined';">Join</button>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: UX Researchers -->
+                    <div class="ai-recommendation-row">
+                        <div class="ai-rec-name">UX Researchers</div>
+                        <div class="ai-rec-desc">Improve User Research, construct maps, study user behaviors and data methodologies.</div>
+                        <div class="ai-rec-action">
+                            <button class="btn-luma-primary ai-rec-btn-action" data-group="UX Researchers" onclick="alert('Joined UX Researchers suggested community!'); this.textContent='Joined ✓'; this.className='btn-luma-joined';">Join</button>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Design Mentors -->
+                    <div class="ai-recommendation-row">
+                        <div class="ai-rec-name">Design Mentors</div>
+                        <div class="ai-rec-desc">Get Portfolio Reviews, interview prep sessions, wireframe guidelines and design advice.</div>
+                        <div class="ai-rec-action">
+                            <button class="btn-luma-primary ai-rec-btn-action" data-group="Design Mentors" onclick="alert('Joined Design Mentors suggested community!'); this.textContent='Joined ✓'; this.className='btn-luma-joined';">Join</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="discussion-comments-modal" class="discovery-modal-overlay" data-testid="discussion-comments-modal">
+        <div class="discovery-modal">
+            <div class="discovery-modal-header">
+                <h2 id="discussion-comments-title" style="margin: 0;">Discussion</h2>
+                <button type="button" class="discovery-modal-close" data-close-discovery-modal data-testid="discussion-comments-close">×</button>
+            </div>
+            <div id="discussion-comments-list" class="post-comment-list" data-testid="discussion-comments-list"></div>
+            <form id="discussion-comment-form" class="discovery-form">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;">
+                    <span id="discussion-reply-label" hidden data-testid="discussion-reply-label"></span>
+                    <button id="discussion-reply-cancel" type="button" class="disc-stat-btn" data-testid="discussion-reply-cancel">Cancel reply</button>
+                </div>
+                <textarea id="discussion-comment-input" maxlength="2000" placeholder="Add a thoughtful response" required data-testid="discussion-comment-input"></textarea>
+                <button type="submit" class="btn-luma-primary" data-testid="discussion-comment-submit">Post Comment</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="discovery-create-post-modal" class="discovery-modal-overlay" data-testid="discovery-create-post-modal">
+        <div class="discovery-modal">
+            <div class="discovery-modal-header">
+                <h2 style="margin: 0;">Start a Discussion</h2>
+                <button type="button" class="discovery-modal-close" data-close-discovery-modal data-testid="discovery-create-post-close">×</button>
+            </div>
+            <form id="discovery-create-post-form" class="discovery-form">
+                <select id="discovery-post-community" required data-testid="discovery-post-community-select"></select>
+                <input id="discovery-post-title" maxlength="180" placeholder="Discussion title" required data-testid="discovery-post-title-input">
+                <textarea id="discovery-post-body" maxlength="5000" placeholder="Share context, a question, or what you learned" required data-testid="discovery-post-body-input"></textarea>
+                <button type="submit" class="btn-luma-primary" data-testid="discovery-post-submit-button">Publish Discussion</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="p0-features.js"></script>
+    <script src="p0-ui.js"></script>
+    <script src="discovery-board.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

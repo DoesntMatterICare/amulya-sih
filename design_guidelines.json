@@ -1,0 +1,161 @@
+{
+  "project_name": "Luma",
+  "app_type": "hybrid_fullstack",
+  "theme": "Light & Soft Premium Radiant (#FCFBFF canvas with Lavender & Petal Pink accents)",
+  "emotional_archetype": "ARCHETYPE 1: ORGANIC & EARTHY / SOFT UTILITY (Warmth, Clarity, Trust, Gentle Momentum)",
+  "typography": {
+    "fonts": {
+      "headings_primary": "'Playfair Display', serif",
+      "headings_secondary": "'DM Serif Display', serif",
+      "body": "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      "logo": "'Georgia', serif",
+      "code_mono": "'JetBrains Mono', monospace"
+    },
+    "scale": {
+      "hero_h1": "text-4xl sm:text-5xl lg:text-6xl (clamp 2.8rem to 3.8rem)",
+      "section_h2": "text-2xl sm:text-3xl lg:text-4xl (2.2rem to 2.8rem)",
+      "card_h3": "text-xl sm:text-2xl (1.3rem to 1.5rem)",
+      "widget_h4": "text-lg sm:text-xl (1.1rem to 1.25rem)",
+      "body_regular": "text-base (16px / 1rem)",
+      "meta_small": "text-sm / text-xs (0.75rem - 0.88rem)"
+    },
+    "rules": [
+      "Never use Inter or generic sans for main section headers (H1/H2). Use Playfair Display or DM Serif Display.",
+      "Always maintain tight tracking-tight on headers above 28px and leading-relaxed on body paragraphs.",
+      "Overlines and labels must be uppercase, 0.75rem-0.85rem, with tracking-[0.15em] or letter-spacing 1.5px."
+    ]
+  },
+  "colors": {
+    "palette": {
+      "primary": "#A775C9",
+      "primary_hover": "#945EBD",
+      "secondary": "#D480BB",
+      "accent_blossom": "#DEAFC2",
+      "success_honeydew": "#EAF7EC",
+      "success_dark": "#1C6B35",
+      "neutral_border": "#E2D9D9",
+      "bg_base": "#FCFBFF",
+      "card_white": "#FFFFFF",
+      "text_heading": "#2D2435",
+      "text_body": "#5E5965",
+      "text_muted": "#8E8696",
+      "glass_bg": "rgba(255, 255, 255, 0.85)",
+      "glass_border": "rgba(226, 217, 217, 0.5)",
+      "glow_lavender": "rgba(167, 117, 201, 0.12)",
+      "glow_pink": "rgba(212, 128, 187, 0.1)"
+    },
+    "contrast_rules": [
+      "Ensure all body text has APCA/WCAG AA contrast (at least 4.5:1 against #FCFBFF or #FFFFFF).",
+      "All buttons on hover must explicitly define text color (e.g., hover:text-white or hover:text-[#A775C9]).",
+      "Never use completely transparent backgrounds behind headers, overlays, dropdowns, or modals. Use frosted glass with backdrop-filter: blur(16px) or solid white."
+    ]
+  },
+  "layout_and_spacing": {
+    "strategy": "Vanilla HTML/CSS/JS with modular components, responsive desktop sidebar + mobile bottom nav",
+    "sidebar_width": "280px",
+    "max_container_width": "1200px",
+    "padding_desktop": "4rem 48px",
+    "padding_mobile": "1.5rem 1rem",
+    "grids": {
+      "community_grid": "grid-template-columns: repeat(3, minmax(0, 1fr)) with 2rem gap; 2-col on <=1024px, 1-col on <=640px",
+      "learning_library_grid": "grid-template-columns: repeat(3, minmax(0, 1fr)) with 1.25rem gap; 2-col on <=1024px, 1-col on <=700px",
+      "community_chat_shell": "grid-template-columns: 220px minmax(0, 1fr); 1-col stacked on mobile",
+      "projects_grid": "grid-template-columns: repeat(2, minmax(0, 1fr)) with 2rem gap"
+    },
+    "card_radii": {
+      "pill": "9999px (buttons, chips, active tags)",
+      "card_large": "24px to 28px (community cards, roadmap cards, learning cards)",
+      "inner_widget": "12px to 16px (comment bubbles, chat bubbles, input bars)"
+    }
+  },
+  "image_urls": {
+    "student_learning_workspace": {
+      "category": "hero_learning_concept",
+      "url": "https://images.unsplash.com/photo-1528901166007-3784c7dd3653?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwyfHx0ZWNoJTIwbGVhcm5pbmclMjBjb2RpbmclMjBzdHVkZW50fGVufDB8fHx8MTc4ODE5NDU3OHww&ixlib=rb-4.1.0&q=85",
+      "description": "Student working on modern programming workflow and learning modules"
+    },
+    "diverse_collaborative_mentorship": {
+      "category": "community_mentors",
+      "url": "https://images.unsplash.com/photo-1507537362848-9c7e70b7b5c1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDN8MHwxfHNlYXJjaHwyfHxkaXZlcnNlJTIwc3R1ZGVudCUyMGNhcmVlciUyMG1lbnRvcnxlbnwwfHx8fDE3ODgxOTQ1Nzh8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Mentorship and discussion exchange between community learners"
+    },
+    "collaborative_coding_session": {
+      "category": "learning_projects",
+      "url": "https://images.unsplash.com/photo-1561346745-5db62ae43861?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwzfHx0ZWNoJTIwbGVhcm5pbmclMjBjb2RpbmclMjBzdHVkZW50fGVufDB8fHx8MTc4ODE5NDU3OHww&ixlib=rb-4.1.0&q=85",
+      "description": "Students reviewing frontend interfaces and discussing product solutions"
+    }
+  },
+  "ui_components_guidelines": {
+    "community_feed": {
+      "file": "/app/discovery-board.js",
+      "html_file": "/app/explorer.html",
+      "rules": [
+        "Render feed cards with author avatar initials or photo, community chip badge, timestamp, post title, and body preview.",
+        "Include one-level reply rendering inside the discussion modal with nested indent (ml-6 or 1.5rem indent) and distinct secondary accent border-left (#D480BB).",
+        "Author management controls (edit/delete) must be shown only for authenticated author matching post user_id.",
+        "Bookmark/Save toggle must reflect optimistic active state with filled bookmark icon and state persistence to saved_posts table in Supabase."
+      ]
+    },
+    "community_chat": {
+      "file": "/app/discovery-board.js",
+      "html_file": "/app/explorer.html",
+      "rules": [
+        "Display sidebar channel list representing communities user can explore or participate in.",
+        "Show real-time message stream with member avatars, bold usernames, formatted timestamps, and smooth auto-scroll to latest message on receive.",
+        "Disable message input or show friendly banner if user is not signed in or not a member of the active community with one-click 'Join to Chat' button."
+      ]
+    },
+    "learning_hub": {
+      "file": "/app/learning-hub.js",
+      "html_file": "/app/learning.html",
+      "rules": [
+        "Include 'For You' and 'Browse All' toggle pills with active pill animation.",
+        "In 'For You' mode, filter resources matching active user profile career path and skills.",
+        "In 'Browse All' mode, enable dropdown filtering for Career, Skill, and search keyword.",
+        "Every resource card must show title, short synopsis, career tag, skill chips, duration, external/internal link button, and completion check toggle.",
+        "Completion toggle must update Supabase user_progress and user_resource_progress immediately with instant green Honeydew (#EAF7EC) badge update."
+      ]
+    },
+    "roadmap_integration": {
+      "file": "/app/roadmap-live.js",
+      "html_file": "/app/journey.html",
+      "rules": [
+        "Each of the 7 roadmap days must display linked resource recommendations fetched from Supabase catalog.",
+        "Marking a roadmap day as completed must synchronize with resource completion state and recalculate journey progress percentage."
+      ]
+    }
+  },
+  "general_ui_ux_guidelines": {
+    "universal_rules": [
+      "Avoid generic centered layouts; maintain clear visual hierarchy with deliberate left alignment for text and balanced widget distributions.",
+      "All interactive elements (buttons, inputs, links, toggles, filter dropdowns, modal triggers, save buttons) MUST have distinct data-testid attributes for testing.",
+      "Respect prefers-reduced-motion and use specific transition definitions (e.g. transition: transform 0.25s ease, box-shadow 0.25s ease) rather than universal transition: all.",
+      "Do not add .App { text-align: center; } or center body text.",
+      "Preserve Luma's existing visual language: soft pill badges, subtle glowing radial backgrounds (8-12% opacity), crisp 1px borders, and colored drop shadows."
+    ],
+    "testing_attribute_conventions": {
+      "learning_mode_for_you": "data-testid=\"learning-mode-for-you\"",
+      "learning_mode_browse_all": "data-testid=\"learning-mode-browse-all\"",
+      "learning_career_filter": "data-testid=\"learning-career-filter\"",
+      "learning_skill_filter": "data-testid=\"learning-skill-filter\"",
+      "learning_resource_search": "data-testid=\"learning-resource-search\"",
+      "learning_library_grid": "data-testid=\"learning-library-grid\"",
+      "learning_library_status": "data-testid=\"learning-library-status\"",
+      "community_chat_shell": "data-testid=\"community-chat-shell\"",
+      "community_message_input": "data-testid=\"community-message-input\"",
+      "community_message_send_button": "data-testid=\"community-message-send-button\"",
+      "discovery_feed_container": "data-testid=\"discovery-feed-container\"",
+      "discovery_new_post_button": "data-testid=\"discovery-new-post-button\"",
+      "discussion_comments_modal": "data-testid=\"discussion-comments-modal\"",
+      "discussion_comment_input": "data-testid=\"discussion-comment-input\"",
+      "discussion_comment_submit": "data-testid=\"discussion-comment-submit\""
+    }
+  },
+  "instructions_to_main_agent": [
+    "Fix session hydration on page load: ensure window.lumaAuthReady or client.auth.getSession() completes before rendering auth-dependent features, preventing flash of unauthenticated state.",
+    "Resolve updateSelectedCareer ReferenceError by ensuring global career state helpers are declared in window scope or imported properly across app.js, learning-hub.js, and discovery-board.js.",
+    "Preserve all existing vanilla HTML/JS/CSS architecture without introducing React or changing backend infrastructure from FastAPI + Supabase.",
+    "Ensure all Supabase queries handle RLS and clock skew retries gracefully as defined in supabase-client.js.",
+    "Seed realistic demo community posts, comments, replies, channels, and resource records so public preview at https://community-feed-131.preview.emergentagent.com looks vibrant and immediately interactive."
+  ]
+}

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Hub | Luma</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="supabase-features.js"></script>
+</head>
+<body class="dash-body">
+    <!-- Sidebar Navigation (Desktop/Tablet) -->
+    <aside class="dash-sidebar">
+        <div>
+            <a href="index.html" class="sidebar-brand">
+                <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGradLearningHub" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#D480BB" />
+                            <stop offset="100%" stop-color="#A775C9" />
+                        </linearGradient>
+                    </defs>
+                    <mask id="logoLMaskLearningHub">
+                        <rect width="100" height="100" fill="white" />
+                        <path d="M 44,28 H 52 V 58 H 68 V 66 H 44 Z" fill="black" />
+                    </mask>
+                    <path d="M 50,5 C 50,30 30,50 5,50 C 30,50 50,70 50,95 C 50,70 70,50 95,50 C 70,50 50,30 50,5 Z" fill="url(#logoGradLearningHub)" mask="url(#logoLMaskLearningHub)" />
+                    <path d="M 42,20 C 29,20 20,29 20,42" stroke="#D480BB" stroke-width="3" stroke-linecap="round" fill="none" />
+                    <path d="M 58,80 C 71,80 80,71 80,58" stroke="#A775C9" stroke-width="3" stroke-linecap="round" fill="none" />
+                </svg>
+                <span class="logo-text" style="font-size: 1.4rem;">Luma</span>
+            </a>
+
+            <nav class="sidebar-links">
+                <a href="dashboard.html" class="sidebar-item">
+                    <!-- Dashboard icon -->
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="learning.html" class="sidebar-item active">
+                    <!-- Book icon -->
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <span>Learning Hub</span>
+                </a>
+                <a href="journey.html" class="sidebar-item">
+                    <!-- Map icon -->
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>
+                    <span>Journey</span>
+                </a>
+                <a href="explorer.html" class="sidebar-item">
+                    <!-- Globe icon -->
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    <span>Explorer Hub</span>
+                </a>
+                <a href="summary.html" class="sidebar-item">
+                    <!-- Chart icon -->
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <span>Summary</span>
+                </a>
+            </nav>
+        </div>
+
+        <a href="profile.html" class="sidebar-profile">
+            <!-- User Profile Icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Profile</span>
+        </a>
+    </aside>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <a href="dashboard.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+            <span>Dashboard</span>
+        </a>
+        <a href="learning.html" class="mobile-nav-item active">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <span>Learning</span>
+        </a>
+        <a href="journey.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon></svg>
+            <span>Journey</span>
+        </a>
+        <a href="explorer.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+            <span>Explorer</span>
+        </a>
+        <a href="#logout" class="mobile-nav-item" id="mobile-logout-btn-action">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <span>Log Out</span>
+        </a>
+    </nav>
+
+    <!-- Main Scrollable Content Area -->
+    <main class="dash-main">
+        <!-- Top header area -->
+        <header class="dash-header-row">
+            <div class="dash-header-left">
+                <h1 class="dash-greeting" style="font-family: 'Playfair Display', serif; font-weight: 700;">Learning Hub</h1>
+                <p class="dash-motivation-quote" style="font-family: 'Inter', sans-serif; font-style: normal; color: var(--color-text-body);">Master the fundamentals one concept at a time.</p>
+            </div>
+
+            <!-- Rounded progress card on Top Right -->
+            <div class="dash-premium-card" style="flex-direction: row; padding: 1.25rem 2rem; gap: 1.5rem; align-items: center; min-width: 320px; border-radius: 20px;">
+                <div style="flex-grow: 1;">
+                    <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--color-secondary); letter-spacing: 1px;">Current Interest</span>
+                    <h4 id="learning-active-career" data-testid="learning-active-career" style="font-family: var(--font-heading-2); font-weight: 700; font-size: 1.15rem; color: var(--color-text-heading); margin-top: 0.2rem;">Loading…</h4>
+                    <p id="learning-roadmap-caption" data-testid="learning-roadmap-caption" style="font-size: 0.82rem; color: var(--color-text-muted); margin-top: 0.4rem;">Loading roadmap…</p>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem;">
+                    <div id="learning-progress-percent" style="font-size: 1.5rem; font-weight: 700; color: var(--color-primary);">0%</div>
+                    <div style="width: 70px; height: 6px; background-color: var(--color-neutral); border-radius: 3px; overflow: hidden;">
+                        <div id="learning-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); border-radius: 3px;"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Two Column Dashboard Layout Grid -->
+        <div class="dash-layout-grid">
+            <!-- LEFT MAIN CONTENT COLUMN -->
+            <div class="dash-column-left">
+                
+                <!-- Current Learning Course Card -->
+                <div class="dash-premium-card" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(251, 248, 253, 0.95) 100%);">
+                    <div class="course-card-content">
+                        <div class="course-left-info">
+                            <span class="course-card-tag">Active Roadmap</span>
+                            <h2 class="course-card-title" id="learning-roadmap-title" data-testid="learning-roadmap-title" style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.85rem;">Your active roadmap</h2>
+                            <p class="course-card-week" id="learning-roadmap-description" data-testid="learning-roadmap-description" style="margin-top: -0.5rem;">Resources and challenges matched to your progress.</p>
+                            
+                            <div style="margin-top: 0.75rem;">
+                                <a href="learning-concept.html?concept=user-research" class="btn btn-solid" style="display: inline-block; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; text-decoration: none; text-align: center; box-shadow: var(--shadow-button);">Continue Learning</a>
+                            </div>
+                        </div>
+                        
+                        <div class="course-illustration-wrapper">
+                            <!-- Beautiful Vector Course Path Illustration representation -->
+                            <svg class="course-illustration-svg" width="150" height="150" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="vectorGradLearning" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#DEAFC2" />
+                                        <stop offset="50%" stop-color="#D480BB" />
+                                        <stop offset="100%" stop-color="#A775C9" />
+                                    </linearGradient>
+                                </defs>
+                                <circle cx="50" cy="50" r="35" fill="url(#vectorGradLearning)" opacity="0.15" />
+                                <circle cx="50" cy="50" r="25" fill="url(#vectorGradLearning)" opacity="0.3" />
+                                <circle cx="50" cy="50" r="15" fill="url(#vectorGradLearning)" />
+                                <!-- Drawing curved paths -->
+                                <path d="M15,50 A35,35 0 0,1 85,50" stroke="#A775C9" stroke-width="2.5" stroke-dasharray="4 4" fill="none" />
+                                <circle cx="15" cy="50" r="4" fill="#D480BB" />
+                                <circle cx="85" cy="50" r="4" fill="#DEAFC2" />
+                                <circle cx="50" cy="15" r="5" fill="#A775C9" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Concepts vertical roadmap section -->
+                <div class="dash-premium-card" style="gap: 1rem;">
+                    <h3 style="font-family: var(--font-heading-2); font-weight: 700; font-size: 1.45rem; color: var(--color-text-heading); display: flex; align-items: center; gap: 8px;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary);"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                        Key Concepts
+                    </h3>
+                    
+                    <div class="concepts-timeline-wrapper" id="learning-real-concepts" data-testid="learning-real-concepts">
+                        <!-- Concept 1: Design Thinking (Completed) -->
+                        <div class="concept-node-row" onclick="window.location.href='learning-concept.html?concept=design-thinking'">
+                            <div class="concept-node-status completed">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <div class="concept-node-card">
+                                <div class="concept-node-left">
+                                    <h4 class="concept-node-title">Design Thinking</h4>
+                                    <p class="concept-node-desc">Learn user-centered frameworks to define problems and ideate creative solutions.</p>
+                                </div>
+                                <div class="concept-node-right">
+                                    <span class="concept-node-duration">15 mins</span>
+                                    <span class="concept-node-badge completed">Completed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Concept 2: User Research (Current) -->
+                        <div class="concept-node-row" onclick="window.location.href='learning-concept.html?concept=user-research'">
+                            <div class="concept-node-status current"></div>
+                            <div class="concept-node-card" style="border-color: var(--color-primary); box-shadow: 0 4px 15px rgba(167, 117, 201, 0.1);">
+                                <div class="concept-node-left">
+                                    <h4 class="concept-node-title" style="color: var(--color-primary);">User Research</h4>
+                                    <p class="concept-node-desc">Master user interviews, personas, and behavioral studies to understand your audience.</p>
+                                </div>
+                                <div class="concept-node-right">
+                                    <span class="concept-node-duration">25 mins</span>
+                                    <span class="concept-node-badge current">Current</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Concept 3: Wireframing (Locked) -->
+                        <div class="concept-node-row" onclick="window.location.href='learning-concept.html?concept=wireframing'">
+                            <div class="concept-node-status locked">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            </div>
+                            <div class="concept-node-card">
+                                <div class="concept-node-left">
+                                    <h4 class="concept-node-title">Wireframing</h4>
+                                    <p class="concept-node-desc">Translate abstract ideas into skeletal UI layouts and screen blueprints.</p>
+                                </div>
+                                <div class="concept-node-right">
+                                    <span class="concept-node-duration">40 mins</span>
+                                    <span class="concept-node-badge locked">Locked</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Concept 4: Information Architecture (Locked) -->
+                        <div class="concept-node-row" onclick="window.location.href='learning-concept.html?concept=information-architecture'">
+                            <div class="concept-node-status locked">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            </div>
+                            <div class="concept-node-card">
+                                <div class="concept-node-left">
+                                    <h4 class="concept-node-title">Information Architecture</h4>
+                                    <p class="concept-node-desc">Structure, label, and organize content menus logically so users find answers instantly.</p>
+                                </div>
+                                <div class="concept-node-right">
+                                    <span class="concept-node-duration">30 mins</span>
+                                    <span class="concept-node-badge locked">Locked</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Concept 5: Visual Design (Locked) -->
+                        <div class="concept-node-row" onclick="window.location.href='learning-concept.html?concept=visual-design'">
+                            <div class="concept-node-status locked">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            </div>
+                            <div class="concept-node-card">
+                                <div class="concept-node-left">
+                                    <h4 class="concept-node-title">Visual Design</h4>
+                                    <p class="concept-node-desc">Apply grids, alignment, responsive color hierarchy, and typography layout systems.</p>
+                                </div>
+                                <div class="concept-node-right">
+                                    <span class="concept-node-duration">45 mins</span>
+                                    <span class="concept-node-badge locked">Locked</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Concept 6: Prototyping (Locked) -->
+                        <div class="concept-node-row" onclick="window.location.href='learning-concept.html?concept=prototyping'">
+                            <div class="concept-node-status locked">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            </div>
+                            <div class="concept-node-card">
+                                <div class="concept-node-left">
+                                    <h4 class="concept-node-title">Prototyping</h4>
+                                    <p class="concept-node-desc">Create high-fidelity interactive flow connections and test realistic usage.</p>
+                                </div>
+                                <div class="concept-node-right">
+                                    <span class="concept-node-duration">35 mins</span>
+                                    <span class="concept-node-badge locked">Locked</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL SIDEBAR COLUMN -->
+            <div class="dash-column-right">
+                
+                <!-- Why this concept matters -->
+                <div class="dash-premium-card" style="background-color: var(--color-white);">
+                    <span class="card-header-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        Why User Research Matters
+                    </span>
+                    <p style="font-size: 0.95rem; line-height: 1.5; color: var(--color-text-body); font-family: 'Inter', sans-serif;">
+                        This concept helps you understand how users think before creating interfaces. Research prevents designing based on personal bias.
+                    </p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+                        <span style="font-size: 0.85rem; font-weight: 700; color: var(--color-text-heading);">Skills You'll Gain:</span>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            <span class="challenge-badge" style="background-color: rgba(167, 117, 201, 0.05); color: var(--color-primary); border-color: rgba(167, 117, 201, 0.15);">Empathy</span>
+                            <span class="challenge-badge" style="background-color: rgba(212, 128, 187, 0.05); color: var(--color-secondary); border-color: rgba(212, 128, 187, 0.15);">Research</span>
+                            <span class="challenge-badge" style="background-color: rgba(167, 117, 201, 0.05); color: var(--color-primary); border-color: rgba(167, 117, 201, 0.15);">Problem Solving</span>
+                            <span class="challenge-badge" style="background-color: rgba(212, 128, 187, 0.05); color: var(--color-secondary); border-color: rgba(212, 128, 187, 0.15);">Creativity</span>
+                            <span class="challenge-badge" style="background-color: rgba(167, 117, 201, 0.05); color: var(--color-primary); border-color: rgba(167, 117, 201, 0.15);">User Thinking</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Streak Card -->
+                <div class="streak-card-glow">
+                    <div class="streak-title-row">
+                        <span>🔥</span>
+                        <span id="dash-streak-value">0 Days</span>
+                    </div>
+                    <p id="learning-progress-caption" style="font-size: 0.92rem; color: var(--color-text-body); line-height: 1.45; font-family: 'Inter', sans-serif;">
+                        Start your first lesson to begin tracking progress.
+                    </p>
+                </div>
+
+                <!-- Weekly Goal Card -->
+                <div class="dash-premium-card">
+                    <span class="card-header-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        This Week's Goal
+                    </span>
+                    <div class="plan-checklist" id="learning-weekly-goals" data-testid="learning-weekly-goals">
+                        <div class="plan-checkbox-item" onclick="this.classList.toggle('checked');">
+                            <div class="checkbox-circle"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <span>User Research</span>
+                        </div>
+                        <div class="plan-checkbox-item" onclick="this.classList.toggle('checked');">
+                            <div class="checkbox-circle"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <span>Wireframing</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600;">
+                            <span>Estimated Time: 2 Hours</span>
+                            <span style="color: var(--color-primary);">50%</span>
+                        </div>
+                        <div style="height: 6px; background-color: var(--color-neutral); border-radius: 3px; overflow: hidden;">
+                            <div style="width: 50%; height: 100%; background-color: var(--color-primary); border-radius: 3px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Luma AI Suggests Card -->
+                <div class="dash-premium-card" style="background: linear-gradient(135deg, rgba(167, 117, 201, 0.04) 0%, rgba(212, 128, 187, 0.04) 100%); border-color: rgba(167, 117, 201, 0.25);">
+                    <span class="card-header-title" style="color: var(--color-primary); font-family: var(--font-heading-2); font-size: 1.1rem; font-weight: 700;">
+                        <!-- Sparkle / AI icon -->
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        Luma AI Suggests
+                    </span>
+                    <p id="learning-ai-suggestion" data-testid="learning-ai-suggestion" style="font-size: 0.92rem; line-height: 1.5; font-style: italic; color: var(--color-text-body);">
+                        Reviewing your roadmap and recent progress…
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+        <section class="dash-premium-card learning-library-section" aria-labelledby="learning-library-title">
+            <div>
+                <span class="course-card-tag">Supabase Learning Library</span>
+                <h2 id="learning-library-title" style="font-family: 'Playfair Display', serif; font-size: 1.85rem; margin: 0.35rem 0;">Resources matched to your direction</h2>
+                <p style="color: var(--color-text-body); margin: 0;">Filter by career or skill, or stay focused on your personalized path.</p>
+            </div>
+            <div class="learning-library-toolbar">
+                <div class="learning-mode-switch" aria-label="Learning resource mode">
+                    <button type="button" class="active" data-learning-mode="personalized" data-testid="learning-mode-for-you">For You</button>
+                    <button type="button" data-learning-mode="browse" data-testid="learning-mode-browse-all">Browse All</button>
+                </div>
+                <select id="learning-career-filter" class="learning-library-filter" disabled data-testid="learning-career-filter">
+                    <option value="">All careers</option>
+                </select>
+                <select id="learning-skill-filter" class="learning-library-filter" data-testid="learning-skill-filter">
+                    <option value="">All skills</option>
+                </select>
+                <input id="learning-resource-search" class="learning-library-search" type="search" placeholder="Search resources" data-testid="learning-resource-search">
+            </div>
+            <p id="learning-library-status" style="margin: 0; color: var(--color-text-muted);" data-testid="learning-library-status">Loading resources…</p>
+            <div id="learning-library-grid" class="learning-library-grid" data-testid="learning-library-grid"></div>
+        </section>
+
+        <!-- BOTTOM SECTION -->
+        <footer style="margin-top: 4rem; display: flex; justify-content: center; padding-bottom: 2rem;">
+            <a href="learning-concept.html?concept=user-research" class="btn btn-solid" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; text-decoration: none; padding: 1.1rem 3rem; border-radius: 50px; font-weight: 700; font-size: 1.1rem; box-shadow: 0 10px 25px rgba(167, 117, 201, 0.25); text-align: center; transition: var(--transition-smooth); display: inline-block;">Continue Learning</a>
+        </footer>
+    </main>
+
+    <!-- Main JS -->
+    <script src="learning-hub.js"></script>
+    <script src="p0-features.js"></script>
+    <script src="p0-ui.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

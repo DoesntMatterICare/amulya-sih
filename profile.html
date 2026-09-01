@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Luma</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+
+    <style>
+        /* Scoped overrides for the redesigned, fully-scrollable Profile page */
+        html, body {
+            height: auto;
+            overflow-x: hidden;
+            overflow-y: auto;
+            background-color: #FCFBFF;
+        }
+
+        .profile-body .dash-sidebar {
+            width: 280px;
+            padding: 2.5rem 1.5rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-right: 1px solid var(--color-neutral);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+        .profile-body .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3.5rem;
+            padding-left: 0.5rem;
+        }
+        .profile-body .sidebar-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            flex-grow: 1;
+        }
+        .profile-body .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0.9rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #2D2435;
+            background-color: var(--color-white);
+            transition: var(--transition-smooth);
+            text-decoration: none;
+        }
+        .profile-body .sidebar-item svg {
+            color: var(--color-primary);
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .profile-body .sidebar-item.active {
+            background-color: var(--color-primary);
+            color: var(--color-white) !important;
+            font-weight: 600;
+            box-shadow: var(--shadow-button);
+        }
+        .profile-body .sidebar-item.active svg {
+            color: var(--color-white);
+        }
+        .profile-body .sidebar-item:not(.active):hover {
+            background-color: rgba(167, 117, 201, 0.08) !important;
+            color: var(--color-primary) !important;
+            transform: translateX(4px);
+        }
+        
+        .profile-body .sidebar-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.9rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #2D2435;
+            background-color: var(--color-white);
+            transition: var(--transition-smooth);
+            margin-top: auto;
+            text-decoration: none;
+        }
+        .profile-body .sidebar-profile svg {
+            color: var(--color-primary);
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+        }
+        .profile-body .sidebar-profile.active {
+            background-color: var(--color-primary);
+            color: var(--color-white) !important;
+            font-weight: 600;
+            box-shadow: var(--shadow-button);
+        }
+        .profile-body .sidebar-profile.active svg {
+            color: var(--color-white);
+        }
+        .profile-body .sidebar-profile:not(.active):hover {
+            background-color: rgba(167, 117, 201, 0.08);
+            color: var(--color-primary);
+        }
+
+        /* 1440px Centered Main Area */
+        .profile-body .dash-main {
+            margin-left: 280px;
+            padding: 3rem 4rem;
+            max-width: 1160px; /* 280px + 1160px = 1440px total */
+            margin-right: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 32px; /* 32px spacing */
+            background-image: 
+                radial-gradient(circle at 85% 15%, rgba(167, 117, 201, 0.04) 0%, transparent 45%),
+                radial-gradient(circle at 15% 85%, rgba(212, 128, 187, 0.04) 0%, transparent 45%);
+            min-height: 100vh;
+            height: auto;
+        }
+
+        /* Profile Header Card */
+        .profile-header-card-redesigned {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.015);
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+            min-height: 250px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            .profile-header-card-redesigned {
+                flex-direction: column;
+                text-align: center;
+                padding: 2rem 1.5rem;
+                min-height: auto;
+            }
+        }
+
+        .profile-avatar-wrapper {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+            flex-shrink: 0;
+        }
+        .profile-avatar-img-big {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--color-white);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .profile-avatar-wrapper:hover .profile-avatar-img-big {
+            transform: scale(1.05);
+        }
+        .profile-avatar-camera-icon {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--color-white);
+            font-size: 0.9rem;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .profile-user-details-column {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+        .profile-tags-inline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            align-items: center;
+        }
+        .profile-bio-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--color-text-body);
+            margin: 0.15rem 0;
+            max-width: 700px;
+        }
+
+        /* Compact Info Chips below User Bio */
+        .profile-chips-row-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 0.5rem 0;
+        }
+        @media (max-width: 768px) {
+            .profile-chips-row-box {
+                justify-content: center;
+            }
+        }
+
+        .profile-info-chip-badge {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral); /* Thin Dust Grey border (#E2D9D9) */
+            border-radius: 16px;
+            height: 52px;
+            padding: 0 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.015);
+            transition: var(--transition-smooth);
+            user-select: none;
+            width: auto;
+        }
+        .profile-info-chip-badge:hover {
+            transform: translateY(-2px);
+            border-color: var(--color-primary);
+            box-shadow: 0 6px 20px rgba(167, 117, 201, 0.12);
+        }
+        .info-chip-icon {
+            font-size: 1.15rem;
+        }
+        .info-chip-label {
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+        .info-chip-val {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--color-text-heading);
+        }
+
+        .profile-header-actions-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 0.25rem;
+        }
+
+        /* Main Profile Content 2-Column Split (70/30) */
+        .profile-main-split-grid {
+            display: grid;
+            grid-template-columns: 7fr 3fr;
+            gap: 2rem;
+            align-items: start;
+        }
+        @media (max-width: 1024px) {
+            .profile-main-split-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sticky Tabs */
+        .sticky-profile-tabs-nav {
+            position: sticky;
+            top: 0;
+            background-color: rgba(252, 251, 255, 0.95);
+            backdrop-filter: blur(15px);
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--color-neutral);
+            margin-bottom: 1.5rem;
+        }
+        .tab-btn-pill {
+            background-color: var(--color-white);
+            border: 1.5px solid var(--color-primary);
+            color: var(--color-primary);
+            font-weight: 700;
+            padding: 0.75rem 1.75rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+        }
+        .tab-btn-pill.active {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            box-shadow: 0 4px 12px rgba(167, 117, 201, 0.2);
+        }
+
+        /* Tab Panels */
+        .profile-active-tab-panel {
+            display: none;
+            flex-direction: column;
+            gap: 1.75rem;
+        }
+        .profile-active-tab-panel.active {
+            display: flex;
+        }
+
+        /* Left Column Content Cards */
+        .vertical-posts-list-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .profile-full-width-post-card {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            transition: var(--transition-smooth);
+        }
+        .profile-full-width-post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+            border-color: var(--color-primary);
+        }
+
+        /* Projects 2-column grid inside Projects Tab */
+        .profile-projects-grid-2col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        @media (max-width: 640px) {
+            .profile-projects-grid-2col {
+                grid-template-columns: 1fr;
+            }
+        }
+        .profile-project-item-card {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral);
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition-smooth);
+        }
+        .profile-project-item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--color-primary);
+        }
+        .project-banner-img-box {
+            width: 100%;
+            height: 130px;
+            background: linear-gradient(135deg, rgba(167, 117, 201, 0.1) 0%, rgba(212, 128, 187, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            color: var(--color-primary);
+            font-weight: 700;
+        }
+        .project-details-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            flex-grow: 1;
+        }
+
+        /* Right Column Sticky Sidebar - Exactly 4 cards */
+        .sticky-right-profile-sidebar {
+            position: sticky;
+            top: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 5;
+        }
+
+        /* Achievement row badge circle styles */
+        .achievement-badge-circle {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+        }
+        .achievement-badge-circle.completed {
+            background-color: rgba(167, 117, 201, 0.08);
+            color: var(--color-primary); /* Bright Lavender icon (#A775C9) */
+        }
+        .achievement-badge-circle.locked {
+            background-color: rgba(226, 217, 217, 0.25);
+            color: #8E8495; /* Dust Grey icon styling (#E2D9D9) */
+        }
+
+        /* Quick Stats 2x2 grid */
+        .quick-stats-grid-2x2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .quick-stat-box-card {
+            background-color: var(--color-bg);
+            border: 1px solid var(--color-neutral);
+            border-radius: 12px;
+            padding: 0.85rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .quick-stat-val {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--color-text-heading);
+        }
+        .quick-stat-lbl {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+        }
+
+        /* AI glowing star indicator */
+        .glowing-ai-star-badge {
+            font-size: 1.3rem;
+            animation: lumaAiPulse 2s infinite ease-in-out;
+            display: inline-block;
+        }
+        @keyframes lumaAiPulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(167,117,201,0.2)); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(167,117,201,0.65)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(167,117,201,0.2)); }
+        }
+
+        /* Create Post Modal Overlay */
+        .modal-overlay-glass {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(45, 36, 53, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .modal-overlay-glass.active {
+            display: flex;
+        }
+        .modal-card-box {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral);
+            border-radius: 28px;
+            width: 100%;
+            max-width: 600px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-hover);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            animation: modalFadePop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes modalFadePop {
+            from { opacity: 0; transform: scale(0.95) translateY(12px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-close-x {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            cursor: pointer;
+            color: var(--color-text-muted);
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            transition: var(--transition-smooth);
+        }
+        .modal-close-x:hover {
+            color: var(--color-primary);
+        }
+    </style>
+</head>
+<body class="dash-body profile-body">
+    <!-- Sidebar Navigation (280px fixed width, icons not cut) -->
+    <aside class="dash-sidebar">
+        <div>
+            <a href="index.html" class="sidebar-brand">
+                <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGradProfileRedesign" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#D480BB" />
+                            <stop offset="100%" stop-color="#A775C9" />
+                        </linearGradient>
+                    </defs>
+                    <mask id="logoLMaskProfileRedesign">
+                        <rect width="100" height="100" fill="white" />
+                        <path d="M 44,28 H 52 V 58 H 68 V 66 H 44 Z" fill="black" />
+                    </mask>
+                    <path d="M 50,5 C 50,30 30,50 5,50 C 30,50 50,70 50,95 C 50,70 70,50 95,50 C 70,50 50,30 50,5 Z" fill="url(#logoGradProfileRedesign)" mask="url(#logoLMaskProfileRedesign)" />
+                </svg>
+                <span class="logo-text" style="font-size: 1.4rem;">Luma</span>
+            </a>
+
+            <nav class="sidebar-links">
+                <a href="dashboard.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="learning.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <span>Learning Hub</span>
+                </a>
+                <a href="journey.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon></svg>
+                    <span>Journey</span>
+                </a>
+                <a href="explorer.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                    <span>Explorer Hub</span>
+                </a>
+                <a href="summary.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <span>Summary</span>
+                </a>
+            </nav>
+        </div>
+
+        <a href="profile.html" class="sidebar-profile active">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Profile</span>
+        </a>
+    </aside>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <a href="dashboard.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+            <span>Dashboard</span>
+        </a>
+        <a href="learning.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <span>Learning</span>
+        </a>
+        <a href="journey.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon></svg>
+            <span>Journey</span>
+        </a>
+        <a href="explorer.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+            <span>Explorer</span>
+        </a>
+        <a href="profile.html" class="mobile-nav-item active">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <!-- Main Centered Content Area (1440px total layout constraint) -->
+    <main class="dash-main">
+        <!-- Page Header -->
+        <header class="dash-header-row" style="margin-bottom: 0.5rem;">
+            <div class="dash-header-left">
+                <h1 id="profile-page-title" data-testid="profile-page-title" style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 2.8rem; color: var(--color-text-heading); margin-bottom: 0.25rem;">My Profile</h1>
+                <p style="font-family: 'Inter', sans-serif; color: var(--color-text-body); margin: 0;">Your learning journey, projects and community contributions.</p>
+            </div>
+        </header>
+
+        <!-- PROFILE HEADER CARD (250px min-height) -->
+        <div class="profile-header-card-redesigned">
+            <div class="profile-avatar-wrapper" id="profile-avatar-trigger" data-testid="profile-avatar-trigger">
+                <img src="assets/astronaut_on_planet.jpg" alt="Profile avatar" class="profile-avatar-img-big" id="profile-avatar-image" data-testid="profile-avatar-image">
+                <div class="profile-avatar-camera-icon">📷</div>
+            </div>
+            
+            <div class="profile-user-details-column">
+                <h2 style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 2.2rem; color: var(--color-text-heading); margin: 0;" id="prof-user-name">Amulya Tanneru</h2>
+                
+                <div class="profile-tags-inline">
+                    <span id="profile-location" data-testid="profile-location" style="display: inline-flex; align-items: center; gap: 4px;">📍 Add your location</span>
+                    <span id="profile-joined" data-testid="profile-joined" style="display: inline-flex; align-items: center; gap: 4px;">📅 Joined Luma</span>
+                </div>
+                
+                <p class="profile-bio-text" id="profile-bio" data-testid="profile-bio">Add a short bio about what you are learning and building.</p>
+
+                <!-- Elegant compact statistic chips row (below bio, not looking like buttons) -->
+                <div class="profile-chips-row-box">
+                    <div class="profile-info-chip-badge">
+                        <span class="info-chip-icon">🚀</span>
+                        <span class="info-chip-label">Projects</span>
+                        <span class="info-chip-val" id="profile-header-projects-count" data-testid="profile-header-projects-count">0</span>
+                    </div>
+                    <div class="profile-info-chip-badge">
+                        <span class="info-chip-icon">💡</span>
+                        <span class="info-chip-label">Contributions</span>
+                        <span class="info-chip-val" id="prof-stat-posts">0</span>
+                    </div>
+                    <div class="profile-info-chip-badge">
+                        <span class="info-chip-icon">👥</span>
+                        <span class="info-chip-label">Communities</span>
+                        <span class="info-chip-val" id="profile-communities-count" data-testid="profile-communities-count">0</span>
+                    </div>
+                    <div class="profile-info-chip-badge">
+                        <span class="info-chip-icon">❤️</span>
+                        <span class="info-chip-label">Badges</span>
+                        <span class="info-chip-val" id="profile-badges-count" data-testid="profile-badges-count">0</span>
+                    </div>
+                    <div class="profile-info-chip-badge">
+                        <span class="info-chip-icon">➕</span>
+                        <span class="info-chip-label">Challenges</span>
+                        <span class="info-chip-val" id="profile-challenges-count" data-testid="profile-challenges-count">0</span>
+                    </div>
+                </div>
+                
+                <div class="profile-header-actions-row">
+                    <button class="btn btn-outline" id="profile-edit-button" data-testid="profile-edit-button" disabled style="padding: 0.55rem 1.6rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; background-color: var(--color-white);">Edit Profile</button>
+                    <button class="btn btn-outline" id="profile-share-button" data-testid="profile-share-button" style="padding: 0.55rem 1.6rem; border-radius: 50px; font-weight: 700; font-size: 0.88rem; background-color: var(--color-white);">Share Profile</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN 2-COLUMN SPLIT GRID (70/30) -->
+        <div class="profile-main-split-grid">
+            
+            <!-- LEFT MAIN CONTENT COLUMN (70%) -->
+            <div class="dash-column-left">
+                
+                <!-- STICKY NAVIGATION TABS BAR -->
+                <div class="sticky-profile-tabs-nav">
+                    <button class="tab-btn-pill active" data-target="posts" data-testid="profile-posts-tab">Posts</button>
+                    <button class="tab-btn-pill" data-target="projects" data-testid="profile-projects-tab">Projects</button>
+                    <button class="tab-btn-pill" data-target="saved" data-testid="profile-saved-tab">Saved Posts</button>
+                </div>
+
+                <!-- TABS CONTAINER -->
+                <div>
+                    <!-- PANEL 1: Posts (Active) - Displays full width posts stacked vertically -->
+                    <div class="profile-active-tab-panel active" id="tab-panel-posts">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <h3 style="font-family: var(--font-heading-2); font-weight: 700; font-size: 1.35rem; color: var(--color-text-heading); margin: 0;">Your Posts</h3>
+                            <button class="btn btn-solid" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; padding: 0.75rem 1.8rem; border-radius: 50px; font-weight: 700;" id="trigger-create-post-btn" data-testid="profile-create-post-button">Create Post</button>
+                        </div>
+
+                        <div class="vertical-posts-list-stack" id="posts-dynamic-holder">
+                            <!-- Post 1 -->
+                            <div class="profile-full-width-post-card">
+                                <div class="discussion-user-row">
+                                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover;">
+                                    <div class="discussion-meta-info">
+                                        <strong>Amulya Tanneru</strong> • <span>1 day ago</span>
+                                    </div>
+                                </div>
+                                <h4 class="discussion-title" style="margin: 0.25rem 0;">Excited to start my UI/UX journey on Luma!</h4>
+                                <p class="discussion-preview" style="color: var(--color-text-body); font-size: 0.98rem; line-height: 1.55;">Just completed the discovery assessment questions and unlocked the Wireframing milestones. Looking forward to sharing feedback concepts with this community!</p>
+                                <div class="discussion-footer" style="margin-top: 0.5rem;">
+                                    <span class="discussion-action-item">👍 14 Likes</span>
+                                    <span class="discussion-action-item">💬 4 Comments</span>
+                                    <span class="discussion-action-item">💾 Saved</span>
+                                    <span class="discussion-action-item">🔗 Share</span>
+                                </div>
+                            </div>
+
+                            <!-- Post 2 -->
+                            <div class="profile-full-width-post-card">
+                                <div class="discussion-user-row">
+                                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover;">
+                                    <div class="discussion-meta-info">
+                                        <strong>Amulya Tanneru</strong> • <span>3 days ago</span>
+                                    </div>
+                                </div>
+                                <h4 class="discussion-title" style="margin: 0.25rem 0;">My wireframing layout sketches</h4>
+                                <p class="discussion-preview" style="color: var(--color-text-body); font-size: 0.98rem; line-height: 1.55;">Here is an initial concept dashboard layout utilizing Luma colors. Let me know if the component groupings make sense.</p>
+                                <div class="discussion-footer" style="margin-top: 0.5rem;">
+                                    <span class="discussion-action-item">👍 28 Likes</span>
+                                    <span class="discussion-action-item">💬 8 Comments</span>
+                                    <span class="discussion-action-item">💾 Saved</span>
+                                    <span class="discussion-action-item">🔗 Share</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PANEL 2: Projects - 2-column grid layout -->
+                    <div class="profile-active-tab-panel" id="tab-panel-projects">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;gap:1rem;">
+                            <h3 style="font-family: var(--font-heading-2); font-weight: 700; font-size: 1.35rem; color: var(--color-text-heading); margin:0;">Projects</h3>
+                            <button class="btn btn-solid" id="profile-project-new-button" data-testid="profile-project-new-button" disabled>Submit Project</button>
+                        </div>
+                        <div class="profile-projects-grid-2col" id="profile-projects-grid" data-testid="profile-projects-grid">
+                            <p>Loading projects…</p>
+                        </div>
+                    </div>
+
+                    <!-- PANEL 3: Saved Posts - Full width posts vertically -->
+                    <div class="profile-active-tab-panel" id="tab-panel-saved">
+                        <h3 style="font-family: var(--font-heading-2); font-weight: 700; font-size: 1.35rem; color: var(--color-text-heading); margin-bottom: 0.5rem;">Saved Posts</h3>
+                        
+                        <div class="vertical-posts-list-stack" id="saved-posts-dynamic-holder">
+                            <!-- Saved 1 -->
+                            <div class="profile-full-width-post-card" style="padding: 1.5rem 2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div class="achievement-badge-circle completed" style="font-size: 1.15rem;">💬</div>
+                                        <div>
+                                            <h4 style="font-size: 1.05rem; font-weight: 700; margin: 0; color: var(--color-text-heading);">How can I improve my case studies?</h4>
+                                            <span style="font-size: 0.82rem; color: var(--color-text-muted);">Saved from UI/UX Design community</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline" style="padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.8rem; min-width: auto; color: #EA4335; border-color: rgba(234,67,53,0.3);" onclick="this.parentElement.parentElement.remove();">Remove</button>
+                                </div>
+                            </div>
+
+                            <!-- Saved 2 -->
+                            <div class="profile-full-width-post-card" style="padding: 1.5rem 2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div class="achievement-badge-circle completed" style="font-size: 1.15rem;">⚙️</div>
+                                        <div>
+                                            <h4 style="font-size: 1.05rem; font-weight: 700; margin: 0; color: var(--color-text-heading);">Best free AI research libraries?</h4>
+                                            <span style="font-size: 0.82rem; color: var(--color-text-muted);">Saved from AI Engineering community</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline" style="padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.8rem; min-width: auto; color: #EA4335; border-color: rgba(234,67,53,0.3);" onclick="this.parentElement.parentElement.remove();">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT STICKY SIDEBAR COLUMN (Exactly 4 Cards, no Upcoming Goals) -->
+            <div class="dash-column-right">
+                <div class="sticky-right-profile-sidebar">
+                    
+                    <!-- CARD 1: Current Interest (with progress and Continue Learning button) -->
+                    <div class="dash-premium-card" style="gap: 1.25rem; border-radius: 24px;">
+                        <span class="card-header-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+                            Current Interest
+                        </span>
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--color-text-muted); font-weight:600; text-transform: uppercase;">Current Learning Path</span>
+                            <h4 style="font-size: 1.25rem; font-weight: 700; margin: 0.15rem 0 0.15rem 0; color: var(--color-primary);" id="prof-career-title">UI/UX Design</h4>
+                            <span style="font-size: 0.85rem; color: var(--color-text-muted);">Current Level: Beginner</span>
+                        </div>
+                        
+                        <div class="week-progress-wrapper" style="width: 100%;">
+                            <div class="week-header" style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; color: var(--color-text-body); margin-bottom: 0.3rem;">
+                                <span>Overall Progress</span>
+                                <span id="profile-progress-percent">0%</span>
+                            </div>
+                            <div class="progress-track" style="height: 6px; width: 100%; background-color: var(--color-neutral); border-radius: 3px; overflow: hidden;">
+                                <div id="profile-progress-bar" class="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); border-radius: 3px;"></div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-solid" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; padding: 0.75rem 0; border-radius: 50px; font-weight: 700; width: 100%; box-shadow: 0 4px 15px rgba(167, 117, 201, 0.25);" onclick="window.location.href='learning.html';">
+                            Continue Learning
+                        </button>
+                    </div>
+
+                    <!-- CARD 2: Achievements (Lavenders for completed, Grey for locked) -->
+                    <div class="dash-premium-card" style="gap: 1.25rem; border-radius: 24px;">
+                        <span class="card-header-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            Achievements
+                        </span>
+                        
+                        <div id="profile-badges-list" data-testid="profile-badges-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <!-- Completed: Bright Lavender (#A775C9) -->
+                            <div class="achievement-row-item">
+                                <span class="achievement-badge-circle completed">🏆</span>
+                                <strong>First Lesson Completed</strong>
+                            </div>
+                            <div class="achievement-row-item">
+                                <span class="achievement-badge-circle completed">🚀</span>
+                                <strong>First Project Uploaded</strong>
+                            </div>
+                            <div class="achievement-row-item">
+                                <span class="achievement-badge-circle completed">🔥</span>
+                                <strong id="profile-reminder-text">Start your first lesson to begin tracking progress.</strong>
+                            </div>
+                            <!-- Locked: Dust Grey (#E2D9D9 / #8E8495) -->
+                            <div class="achievement-row-item" style="opacity: 0.7;">
+                                <span class="achievement-badge-circle locked">👥</span>
+                                <span style="color: #666; font-weight: 500;">Community Contributor</span>
+                            </div>
+                            <div class="achievement-row-item" style="opacity: 0.7;">
+                                <span class="achievement-badge-circle locked">🏅</span>
+                                <span style="color: #666; font-weight: 500;">Challenge Winner</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 3: Luma AI Insights (AI-generated insight, glowing icon) -->
+                    <div class="dash-premium-card" style="background: linear-gradient(135deg, rgba(167, 117, 201, 0.04) 0%, rgba(212, 128, 187, 0.04) 100%); border-color: rgba(167, 117, 201, 0.2); border-radius: 24px; gap: 0.85rem;">
+                        <span class="card-header-title" style="color: var(--color-primary); font-family: var(--font-heading-2); font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                            <span class="glowing-ai-star-badge">✨</span>
+                            Luma AI Insights
+                        </span>
+                        <p style="font-size: 0.92rem; line-height: 1.55; color: var(--color-text-body); margin: 0;" id="prof-ai-insight-val">
+                            "You're making consistent progress in UI/UX Design. Continue building projects and participating in community discussions to strengthen your portfolio."
+                        </p>
+                    </div>
+
+                    <!-- CARD 4: Quick Stats (2x2 Grid of learning stats) -->
+                    <div class="dash-premium-card" style="gap: 1.25rem; border-radius: 24px;">
+                        <span class="card-header-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                            Quick Stats
+                        </span>
+                        
+                        <div class="quick-stats-grid-2x2">
+                            <div class="quick-stat-box-card">
+                                <span id="profile-learning-time" class="quick-stat-val">0 minutes</span>
+                                <span class="quick-stat-lbl">Estimated Learning Time</span>
+                            </div>
+                            <div class="quick-stat-box-card">
+                                <span id="profile-resources-count" class="quick-stat-val">0</span>
+                                <span class="quick-stat-lbl">Resources</span>
+                            </div>
+                            <div class="quick-stat-box-card">
+                                <span id="profile-projects-count" class="quick-stat-val">0</span>
+                                <span class="quick-stat-lbl">Projects</span>
+                            </div>
+                            <div class="quick-stat-box-card">
+                                <span id="profile-streak-value" class="quick-stat-val">0 Days</span>
+                                <span class="quick-stat-lbl">Streak</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BOTTOM BANNER -->
+        <div class="motivational-quote-banner" style="background: linear-gradient(135deg, #DEAFC2 0%, #D480BB 100%); margin-top: 1rem; border-radius: 24px;">
+            <p class="motivational-quote-text" style="font-family: var(--font-heading-2); font-size: 1.55rem; font-weight: 700; color: var(--color-white); margin-bottom: 1.25rem;">
+                "Every project you build is another step toward discovering your future."
+            </p>
+            <div>
+                <button class="btn btn-solid" style="background: var(--color-white); color: var(--color-primary); border: none; font-weight: 700; padding: 0.85rem 2.5rem; border-radius: 50px;" onclick="window.location.href='learning.html';">Continue Learning</button>
+            </div>
+        </div>
+    </main>
+
+    <input type="file" id="profile-avatar-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden data-testid="profile-avatar-input">
+
+    <div class="modal-overlay-glass" id="profile-edit-modal" data-testid="profile-edit-modal">
+        <div class="modal-card-box">
+            <button type="button" class="modal-close-x" data-close-p0-modal aria-label="Close">×</button>
+            <h2>Edit profile</h2>
+            <form id="profile-edit-form" class="discovery-form">
+                <label for="profile-edit-name">Display name</label>
+                <input id="profile-edit-name" maxlength="80" required data-testid="profile-edit-name-input">
+                <label for="profile-edit-headline">Headline</label>
+                <input id="profile-edit-headline" maxlength="140" placeholder="What are you exploring?" data-testid="profile-edit-headline-input">
+                <label for="profile-edit-location">Location</label>
+                <input id="profile-edit-location" maxlength="100" placeholder="City, Country" data-testid="profile-edit-location-input">
+                <label for="profile-edit-bio">Bio</label>
+                <textarea id="profile-edit-bio" maxlength="500" rows="4" data-testid="profile-edit-bio-input"></textarea>
+                <button class="btn btn-solid btn-full" type="submit" data-testid="profile-edit-submit-button">Save Profile</button>
+                <p id="profile-edit-status" data-testid="profile-edit-status"></p>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay-glass" id="project-submit-modal" data-testid="project-submit-modal">
+        <div class="modal-card-box">
+            <button type="button" class="modal-close-x" data-close-p0-modal aria-label="Close">×</button>
+            <h2 id="project-form-heading">Share a project</h2>
+            <form id="project-submit-form" class="discovery-form">
+                <input id="project-edit-id" type="hidden">
+                <label for="project-title-input">Title</label>
+                <input id="project-title-input" maxlength="180" required data-testid="project-title-input">
+                <label for="project-description-input">Description</label>
+                <textarea id="project-description-input" maxlength="5000" minlength="10" rows="5" required data-testid="project-description-input"></textarea>
+                <label for="project-career-select">Career</label>
+                <select id="project-career-select" required data-testid="project-career-select"><option value="">Choose a career</option></select>
+                <label for="project-skills-select">Skills</label>
+                <select id="project-skills-select" multiple size="5" data-testid="project-skills-select"></select>
+                <label for="project-url-input">Project link (optional)</label>
+                <input id="project-url-input" type="url" placeholder="https://" data-testid="project-url-input">
+                <label for="project-image-input">Cover image (optional, max 5 MB)</label>
+                <input id="project-image-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-testid="project-image-input">
+                <button class="btn btn-solid btn-full" type="submit" data-testid="project-submit-button">Publish Project</button>
+                <p id="project-submit-status" data-testid="project-submit-status"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- CREATE POST MODAL DIALOG -->
+    <div class="modal-overlay-glass" id="create-post-modal-box" data-testid="profile-create-post-modal">
+        <div class="modal-card-box">
+            <button class="modal-close-x" id="modal-close-trigger-x" aria-label="Close modal" data-testid="profile-create-post-close-button">×</button>
+            
+            <h2 style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.8rem; color: var(--color-text-heading); margin: 0;">Create a Post</h2>
+            <p style="font-size: 0.95rem; color: var(--color-text-muted); margin-top: -0.5rem;">Share your thoughts, doubts or projects with the community.</p>
+            
+            <form id="create-post-inner-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Post Title -->
+                <div>
+                    <label style="font-size: 0.88rem; font-weight: 700; color: var(--color-text-heading); display: block; margin-bottom: 0.4rem;">Title</label>
+                    <input type="text" id="modal-title-input" class="assessment-input-box" placeholder="e.g., Feedback on my first wireframe" style="width: 100%; border-radius: 12px; padding: 0.85rem 1.25rem;" required data-testid="profile-post-title-input">
+                </div>
+                
+                <!-- Description -->
+                <div>
+                    <label style="font-size: 0.88rem; font-weight: 700; color: var(--color-text-heading); display: block; margin-bottom: 0.4rem;">Description</label>
+                    <textarea id="modal-desc-input" class="assessment-input-box assessment-textarea" placeholder="Describe what you want to share..." style="width: 100%; border-radius: 12px; min-height: 120px; padding: 0.85rem 1.25rem;" required data-testid="profile-post-body-input"></textarea>
+                </div>
+                
+                <!-- Community Dropdown -->
+                <div>
+                    <label style="font-size: 0.88rem; font-weight: 700; color: var(--color-text-heading); display: block; margin-bottom: 0.4rem;">Community</label>
+                    <select id="modal-comm-input" class="assessment-input-box" style="width: 100%; border-radius: 12px; padding: 0.85rem 1.25rem; appearance: none; background-color: var(--color-bg);" required data-testid="profile-post-community-select">
+                        <option value="UI/UX Design">UI/UX Design</option>
+                        <option value="AI Engineering">AI Engineering</option>
+                        <option value="Graphic Design">Graphic Design</option>
+                        <option value="Full Stack Development">Full Stack Development</option>
+                    </select>
+                </div>
+                
+                <!-- Drag and Drop area -->
+                <div style="border: 2px dashed var(--color-neutral); border-radius: 16px; padding: 1.5rem; text-align: center; color: var(--color-text-muted); cursor: pointer;" onclick="alert('Image upload selected.');">
+                    <span style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem;">📂</span>
+                    <strong style="font-size: 0.88rem; color: var(--color-text-heading);">Drag & Drop an image</strong>
+                    <span style="display: block; font-size: 0.8rem; margin-top: 0.15rem;">or click to select files (optional)</span>
+                </div>
+                
+                <!-- Submit post button -->
+                <button type="submit" class="btn btn-solid" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; padding: 0.95rem 0; border-radius: 50px; font-weight: 700; width: 100%; margin-top: 0.5rem; box-shadow: 0 4px 15px rgba(167, 117, 201, 0.25);" data-testid="profile-post-submit-button">
+                    Post
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script triggers -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userStr = localStorage.getItem('luma_user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                document.getElementById('prof-user-name').textContent = user.name;
+            }
+
+            const careerPath = localStorage.getItem('luma_career_path') || 'UI/UX Design';
+            document.getElementById('prof-career-title').textContent = careerPath;
+
+            // Personalize AI Insights
+            const insightText = document.getElementById('prof-ai-insight-val');
+            if (careerPath === 'AI Engineering') {
+                insightText.textContent = `"You're making consistent progress in AI Engineering. Continue building projects and participating in community discussions to strengthen your portfolio."`;
+            } else if (careerPath === 'Full Stack Development') {
+                insightText.textContent = `"You're making consistent progress in Full Stack Development. Continue building projects and participating in community discussions to strengthen your portfolio."`;
+            }
+
+            // Tab toggler functionality
+            const tabBtns = document.querySelectorAll('.tab-btn-pill');
+            const tabPanels = document.querySelectorAll('.profile-active-tab-panel');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabPanels.forEach(p => p.classList.remove('active'));
+
+                    btn.classList.add('active');
+                    const target = btn.getAttribute('data-target');
+                    const activePanel = document.getElementById(`tab-panel-${target}`);
+                    if (activePanel) activePanel.classList.add('active');
+                });
+            });
+
+            // Modal dialog triggers
+            const modal = document.getElementById('create-post-modal-box');
+            const openModalBtn = document.getElementById('trigger-create-post-btn');
+            const closeModalBtn = document.getElementById('modal-close-trigger-x');
+
+            if (openModalBtn && modal) {
+                openModalBtn.addEventListener('click', () => {
+                    modal.classList.add('active');
+                });
+            }
+
+            if (closeModalBtn && modal) {
+                closeModalBtn.addEventListener('click', () => {
+                    modal.classList.remove('active');
+                });
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            }
+
+            // Form post logic
+            const form = document.getElementById('create-post-inner-form');
+            const postsContainer = document.getElementById('posts-dynamic-holder');
+            const savedPostsContainer = document.getElementById('saved-posts-dynamic-holder');
+            const postsCountLabel = document.getElementById('prof-stat-posts');
+
+            const buildPostCard = (post, saved = false) => {
+                const card = document.createElement('div');
+                card.className = 'profile-full-width-post-card';
+                card.dataset.testid = `${saved ? 'profile-saved-post' : 'profile-user-post'}-${post.id}`;
+                const header = document.createElement('div');
+                header.className = 'discussion-meta-info';
+                const author = document.createElement('strong');
+                author.textContent = post.author_name || 'Luma Learner';
+                const community = document.createElement('span');
+                community.textContent = ` • ${saved ? 'Saved from' : 'Posted in'} ${post.communities?.name || 'Luma Community'}`;
+                header.append(author, community);
+                const title = document.createElement('h4');
+                title.className = 'discussion-title';
+                title.style.margin = '0.25rem 0';
+                title.textContent = post.title;
+                const body = document.createElement('p');
+                body.className = 'discussion-preview';
+                body.style.cssText = 'color: var(--color-text-body); font-size: 0.98rem; line-height: 1.55;';
+                body.textContent = post.body;
+                card.append(header, title, body);
+                return card;
+            };
+
+            try {
+                if (window.lumaAuthReady) await window.lumaAuthReady;
+                postsContainer.replaceChildren();
+                savedPostsContainer.replaceChildren();
+                const requestedUserId = new URLSearchParams(window.location.search).get('user');
+                let discovery = null;
+                if (window.LumaData && requestedUserId) {
+                    const feed = await window.LumaData.loadDiscoveryFeed();
+                    discovery = { userPosts: feed.filter((post) => post.user_id === requestedUserId), savedPosts: [] };
+                } else if (window.LumaData) {
+                    discovery = await window.LumaData.loadDiscoveryState();
+                }
+                if (discovery) {
+                    [...discovery.userPosts].reverse().forEach((post) => postsContainer.insertBefore(buildPostCard(post), postsContainer.firstChild));
+                    discovery.savedPosts.forEach((item) => {
+                        if (item.discovery_posts) savedPostsContainer.insertBefore(buildPostCard(item.discovery_posts, true), savedPostsContainer.firstChild);
+                    });
+                    postsCountLabel.textContent = String(discovery.userPosts.length);
+                    if (!discovery.userPosts.length) postsContainer.textContent = 'No community posts yet.';
+                    if (!discovery.savedPosts.length) savedPostsContainer.textContent = 'No saved posts yet.';
+                }
+            } catch (error) {
+                console.warn('Profile community activity could not be loaded', error);
+            }
+
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const title = document.getElementById('modal-title-input').value.trim();
+                    const desc = document.getElementById('modal-desc-input').value.trim();
+                    const comm = document.getElementById('modal-comm-input').value;
+                    let createdPost;
+                    try {
+                        if (window.LumaData) createdPost = await window.LumaData.createPost({ title, body: desc, communityName: comm });
+                    } catch (error) {
+                        alert('Your post could not be saved yet.');
+                        return;
+                    }
+
+                    const card = buildPostCard({ ...createdPost, title, body: desc, communities: { name: comm } });
+                    card.style.animation = 'panelFadeIn 0.4s ease forwards';
+                    postsContainer.insertBefore(card, postsContainer.firstChild);
+
+                    // Update stats
+                    let count = parseInt(postsCountLabel.textContent) || 0;
+                    count++;
+                    postsCountLabel.textContent = count;
+
+                    // Clear and close
+                    form.reset();
+                    modal.classList.remove('active');
+                    alert('Post published successfully!');
+                });
+            }
+        });
+    </script>
+    <script src="supabase-features.js"></script>
+    <script src="p0-features.js"></script>
+    <script src="p0-ui.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

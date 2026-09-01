@@ -1,0 +1,9 @@
+{
+  "name": "luma-preserved-frontend",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "typecheck": "node --check ../app.js && node --check ../supabase-client.js && node --check ../supabase-features.js && node --check ../p0-features.js && node --check ../discovery-board.js && node --check ../learning-hub.js && node --check ../learning-concept-live.js && node --check ../roadmap-live.js && node --check ../p0-ui.js"
+  }
+}

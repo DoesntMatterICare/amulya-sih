@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary | Luma</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+
+    <style>
+        /* Scoped overrides for the redesigned Summary page */
+        .summary-body .dash-sidebar {
+            width: 280px;
+            padding: 2.5rem 1.5rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-right: 1px solid var(--color-neutral);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+        .summary-body .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3.5rem;
+            padding-left: 0.5rem;
+        }
+        .summary-body .sidebar-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            flex-grow: 1;
+        }
+        .summary-body .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0.9rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #2D2435;
+            background-color: var(--color-white);
+            transition: var(--transition-smooth);
+        }
+        .summary-body .sidebar-item svg {
+            color: var(--color-primary);
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .summary-body .sidebar-item.active {
+            background-color: var(--color-primary);
+            color: var(--color-white) !important;
+            font-weight: 600;
+            box-shadow: var(--shadow-button);
+        }
+        .summary-body .sidebar-item.active svg {
+            color: var(--color-white);
+        }
+        .summary-body .sidebar-item:not(.active):hover {
+            background-color: rgba(167, 117, 201, 0.08) !important;
+            color: var(--color-primary) !important;
+            transform: translateX(4px);
+        }
+        .summary-body .sidebar-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.9rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #2D2435;
+            background-color: var(--color-white);
+            transition: var(--transition-smooth);
+            margin-top: auto;
+        }
+        .summary-body .sidebar-profile svg {
+            color: var(--color-primary);
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+        }
+        .summary-body .sidebar-profile:hover {
+            background-color: rgba(167, 117, 201, 0.08);
+            color: var(--color-primary);
+            cursor: pointer;
+        }
+
+        .summary-body .dash-main {
+            margin-left: 280px;
+            padding: 3rem 4rem;
+            gap: 2.5rem;
+            background-image: 
+                radial-gradient(circle at 85% 15%, rgba(167, 117, 201, 0.04) 0%, transparent 45%),
+                radial-gradient(circle at 15% 85%, rgba(212, 128, 187, 0.04) 0%, transparent 45%);
+        }
+
+        /* Rows layout */
+        .summary-row-1 {
+            display: grid;
+            grid-template-columns: 4.5fr 5.5fr;
+            gap: 2rem;
+        }
+        .summary-row-2 {
+            display: grid;
+            grid-template-columns: 5.5fr 4.5fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .summary-row-1, .summary-row-2 {
+                grid-template-columns: 1fr;
+            }
+            .summary-body .dash-sidebar {
+                display: none;
+            }
+            .summary-body .dash-main {
+                margin-left: 0;
+                padding: 2rem 1rem;
+            }
+        }
+
+        /* Top Left Card Illustrations */
+        .interest-illustration-box {
+            margin-top: auto;
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(167, 117, 201, 0.06) 0%, rgba(212, 128, 187, 0.06) 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed rgba(167, 117, 201, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Consistency Graph Chart styling */
+        .consistency-chart-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 160px;
+            padding: 0.5rem 0.75rem;
+            background-color: var(--color-bg);
+            border-radius: 18px;
+            border: 1px solid var(--color-neutral);
+            position: relative;
+        }
+        .chart-bar-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex-grow: 1;
+        }
+        .chart-bar-rail {
+            width: 24px;
+            height: 110px;
+            background-color: rgba(226, 217, 217, 0.4);
+            border-radius: 6px;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+        .chart-bar-fill {
+            width: 100%;
+            border-radius: 6px;
+            background: linear-gradient(180deg, var(--color-secondary) 0%, var(--color-primary) 100%);
+            height: 0%;
+            transition: height 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .chart-bar-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-body);
+        }
+
+        /* Circular Progress styling */
+        .progress-overview-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 2rem;
+        }
+        @media (max-width: 640px) {
+            .progress-overview-content {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+        }
+        .progress-stats-column {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            flex-grow: 1;
+        }
+        .progress-stat-row-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            border-bottom: 1px solid rgba(226, 217, 217, 0.5);
+            padding-bottom: 0.4rem;
+        }
+        .progress-stat-row-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Circular progress ring */
+        .summary-circle-container {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .summary-circle-svg {
+            transform: rotate(-90deg);
+        }
+        .circle-bg-ring {
+            stroke: var(--color-neutral);
+            fill: transparent;
+        }
+        .circle-fill-ring {
+            stroke: var(--color-primary);
+            fill: transparent;
+            stroke-dasharray: 339.29; /* 2 * PI * r (r=54) */
+            stroke-dashoffset: 339.29;
+            transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .circle-percentage-text {
+            position: absolute;
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: var(--color-text-heading);
+        }
+
+        /* Achievements Layout */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.25rem;
+        }
+        @media (max-width: 900px) {
+            .achievements-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 600px) {
+            .achievements-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .achievement-premium-badge-card {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral);
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 0.75rem;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+        }
+        .achievement-premium-badge-card:hover {
+            transform: translateY(-3px) scale(1.02);
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .achievement-badge-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            background-color: var(--color-bg);
+            transition: var(--transition-smooth);
+        }
+        .achievement-premium-badge-card.unlocked .achievement-badge-icon-box {
+            background-color: rgba(167, 117, 201, 0.08);
+            color: var(--color-primary);
+        }
+        .achievement-premium-badge-card.locked {
+            opacity: 0.75;
+        }
+        .achievement-premium-badge-card.locked .achievement-badge-icon-box {
+            background-color: #f1ede8;
+            color: #888;
+            filter: grayscale(1);
+        }
+
+        .achievement-status-tag {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .achievement-status-tag.unlocked {
+            background-color: #EAF7EC;
+            color: #1b5329;
+        }
+        .achievement-status-tag.locked {
+            background-color: #E2D9D9;
+            color: #666;
+        }
+
+        /* Elegant stats list icons */
+        .stat-icon-wrapper {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background-color: rgba(167, 117, 201, 0.08);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+        }
+
+        /* Sparkle AI star animations */
+        .sparkle-ai-pulse {
+            animation: pulseStar 1.5s infinite alternate;
+        }
+        @keyframes pulseStar {
+            0% { transform: scale(1); filter: drop-shadow(0 0 1px rgba(167, 117, 201, 0.4)); }
+            100% { transform: scale(1.15); filter: drop-shadow(0 0 6px rgba(167, 117, 201, 0.8)); }
+        }
+    </style>
+</head>
+<body class="dash-body summary-body">
+    <!-- Sidebar Navigation -->
+    <aside class="dash-sidebar">
+        <div>
+            <a href="index.html" class="sidebar-brand">
+                <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGradSummary" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#D480BB" />
+                            <stop offset="100%" stop-color="#A775C9" />
+                        </linearGradient>
+                    </defs>
+                    <mask id="logoLMaskSummary">
+                        <rect width="100" height="100" fill="white" />
+                        <path d="M 44,28 H 52 V 58 H 68 V 66 H 44 Z" fill="black" />
+                    </mask>
+                    <path d="M 50,5 C 50,30 30,50 5,50 C 30,50 50,70 50,95 C 50,70 70,50 95,50 C 70,50 50,30 50,5 Z" fill="url(#logoGradSummary)" mask="url(#logoLMaskSummary)" />
+                </svg>
+                <span class="logo-text" style="font-size: 1.4rem;">Luma</span>
+            </a>
+
+            <nav class="sidebar-links">
+                <a href="dashboard.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="learning.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <span>Learning Hub</span>
+                </a>
+                <a href="journey.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon></svg>
+                    <span>Journey</span>
+                </a>
+                <a href="explorer.html" class="sidebar-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                    <span>Explorer Hub</span>
+                </a>
+                <a href="summary.html" class="sidebar-item active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <span>Summary</span>
+                </a>
+            </nav>
+        </div>
+
+        <a href="profile.html" class="sidebar-profile">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Profile</span>
+        </a>
+    </aside>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <a href="dashboard.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+            <span>Dashboard</span>
+        </a>
+        <a href="learning.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <span>Learning</span>
+        </a>
+        <a href="journey.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon></svg>
+            <span>Journey</span>
+        </a>
+        <a href="explorer.html" class="mobile-nav-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+            <span>Explorer</span>
+        </a>
+        <a href="summary.html" class="mobile-nav-item active">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <span>Summary</span>
+        </a>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="dash-main">
+        <!-- Top Header Section -->
+        <header class="dash-header-row">
+            <div class="dash-header-left">
+                <h1 style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 2.8rem; color: var(--color-text-heading); margin-bottom: 0.25rem;">Summary</h1>
+                <p style="font-family: 'Inter', sans-serif; color: var(--color-text-body); margin: 0;">Here's a snapshot of your learning journey and progress.</p>
+            </div>
+        </header>
+
+        <!-- FIRST ROW LAYOUT -->
+        <div class="summary-row-1">
+            <!-- Top Left Card: Current Interest -->
+            <div class="dash-premium-card" style="border-radius: 24px;">
+                <span class="card-header-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="12 8 8 12 12 16 12 8"></polygon></svg>
+                    Current Interest
+                </span>
+
+                <div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.25rem;">
+                    <h2 style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.85rem; color: var(--color-primary); margin: 0;" id="sum-career-title">UI/UX Design</h2>
+                    
+                    <div style="display: flex; gap: 15px; margin-top: 0.5rem; font-size: 0.95rem;">
+                        <div>
+                            <span style="color: var(--color-text-muted); font-weight: 500;">Current Level:</span>
+                            <strong style="color: var(--color-text-heading); display: block; margin-top: 0.15rem;">Beginner</strong>
+                        </div>
+                        <div style="border-left: 1px solid var(--color-neutral); padding-left: 15px;">
+                            <span style="color: var(--color-text-muted); font-weight: 500;">Next Milestone:</span>
+                            <strong style="color: var(--color-text-heading); display: block; margin-top: 0.15rem;">Complete Wireframing</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="interest-illustration-box">
+                    <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="illuGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#DEAFC2" />
+                                <stop offset="100%" stop-color="#A775C9" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="35" stroke="url(#illuGrad)" stroke-width="2" stroke-dasharray="3 3" fill="none"/>
+                        <path d="M30,50 L45,65 L70,35" stroke="url(#illuGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Top Right Card: Consistency Graph -->
+            <div class="dash-premium-card" style="border-radius: 24px;">
+                <span class="card-header-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    Consistency Graph
+                </span>
+
+                <!-- Weekly Bar Graph Container -->
+                <div class="consistency-chart-container">
+                    <div class="chart-bar-col">
+                        <div class="chart-bar-rail"><div class="chart-bar-fill" style="height: 80%;"></div></div>
+                        <span class="chart-bar-label">M</span>
+                    </div>
+                    <div class="chart-bar-col">
+                        <div class="chart-bar-rail"><div class="chart-bar-fill" style="height: 60%;"></div></div>
+                        <span class="chart-bar-label">T</span>
+                    </div>
+                    <div class="chart-bar-col">
+                        <div class="chart-bar-rail"><div class="chart-bar-fill" style="height: 95%;"></div></div>
+                        <span class="chart-bar-label">W</span>
+                    </div>
+                    <div class="chart-bar-col">
+                        <div class="chart-bar-rail"><div class="chart-bar-fill" style="height: 40%;"></div></div>
+                        <span class="chart-bar-label">T</span>
+                    </div>
+                    <div class="chart-bar-col">
+                        <div class="chart-bar-rail"><div class="chart-bar-fill" style="height: 85%;"></div></div>
+                        <span class="chart-bar-label">F</span>
+                    </div>
+                    <div class="chart-bar-col">
+                        <div class="chart-bar-rail"><div class="chart-bar-fill" style="height: 30%;"></div></div>
+                        <span class="chart-bar-label">S</span>
+                    </div>
+                    <div class="chart-bar-col">
+                        <div class="chart-bar-rail"><div class="chart-bar-fill" style="height: 15%;"></div></div>
+                        <span class="chart-bar-label">S</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 25px; margin-top: 0.25rem; font-size: 0.95rem;">
+                    <div>
+                        <span style="color: var(--color-text-muted);">Current Streak</span>
+                        <strong id="summary-streak-count" style="color: var(--color-text-heading); display: block; margin-top: 0.15rem; font-size: 1.15rem;">🔥 0 Days</strong>
+                    </div>
+                    <div style="border-left: 1px solid var(--color-neutral); padding-left: 25px;">
+                        <span style="color: var(--color-text-muted);">Longest Streak</span>
+                        <strong style="color: var(--color-text-heading); display: block; margin-top: 0.15rem; font-size: 1.15rem;">🔥 0 Days</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECOND ROW LAYOUT -->
+        <div class="summary-row-2" style="margin-top: 0.5rem;">
+            <!-- Second Row Left: Progress Overview -->
+            <div class="dash-premium-card" style="border-radius: 24px;">
+                <span class="card-header-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    Progress Overview
+                </span>
+
+                <div class="progress-overview-content">
+                    <div class="summary-circle-container">
+                        <svg class="summary-circle-svg" width="120" height="120" viewBox="0 0 120 120">
+                            <circle class="circle-bg-ring" cx="60" cy="60" r="54" stroke-width="8"/>
+                            <circle id="sum-circle-fill" class="circle-fill-ring" cx="60" cy="60" r="54" stroke-width="8"/>
+                        </svg>
+                        <span id="sum-circle-percentage" class="circle-percentage-text">0%</span>
+                    </div>
+
+                    <div class="progress-stats-column">
+                        <div class="progress-stat-row-item">
+                            <span style="color: var(--color-text-muted); font-weight: 500;">Lessons Completed</span>
+                            <strong id="summary-resources-count" data-testid="summary-resources-count" style="color: var(--color-text-heading);">0</strong>
+                        </div>
+                        <div class="progress-stat-row-item">
+                            <span style="color: var(--color-text-muted); font-weight: 500;">Projects Completed</span>
+                            <strong id="summary-projects-count" data-testid="summary-projects-count" style="color: var(--color-text-heading);">0</strong>
+                        </div>
+                        <div class="progress-stat-row-item">
+                            <span style="color: var(--color-text-muted); font-weight: 500;">Challenges Completed</span>
+                            <strong id="summary-challenges-count" data-testid="summary-challenges-count" style="color: var(--color-text-heading);">0</strong>
+                        </div>
+                        <div class="progress-stat-row-item">
+                            <span style="color: var(--color-text-muted); font-weight: 500;">Certificates Earned</span>
+                            <strong id="summary-certificates-count" style="color: var(--color-text-heading);">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Row Right: Learning Hours -->
+            <div class="dash-premium-card" style="border-radius: 24px;">
+                <span class="card-header-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Estimated Learning Time
+                </span>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 0.25rem;">
+                    <!-- Hours Stat 1 -->
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="stat-icon-wrapper">⏱️</div>
+                        <div>
+                            <span style="color: var(--color-text-muted); font-size: 0.85rem; font-weight: 500; display: block;">Total Hours</span>
+                            <strong style="color: var(--color-text-heading); font-size: 1.25rem;">32 hrs</strong>
+                        </div>
+                    </div>
+
+                    <!-- Hours Stat 2 -->
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="stat-icon-wrapper" style="color: var(--color-secondary); background-color: rgba(212,128,187,0.08);">⚡</div>
+                        <div>
+                            <span style="color: var(--color-text-muted); font-size: 0.85rem; font-weight: 500; display: block;">Daily Average</span>
+                            <strong style="color: var(--color-text-heading); font-size: 1.25rem;">0 minutes</strong>
+                        </div>
+                    </div>
+
+                    <!-- Hours Stat 3 -->
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="stat-icon-wrapper" style="color: var(--color-accent); background-color: rgba(222,175,194,0.12);">📅</div>
+                        <div>
+                            <span style="color: var(--color-text-muted); font-size: 0.85rem; font-weight: 500; display: block;">This Week</span>
+                            <strong style="color: var(--color-text-heading); font-size: 1.25rem;">0 minutes</strong>
+                        </div>
+                    </div>
+
+                    <!-- Hours Stat 4 -->
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="stat-icon-wrapper">🔥</div>
+                        <div>
+                            <span style="color: var(--color-text-muted); font-size: 0.85rem; font-weight: 500; display: block;">This Month</span>
+                            <strong style="color: var(--color-text-heading); font-size: 1.25rem;">32 hrs</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- THIRD ROW: Achievements -->
+        <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1rem;">
+            <h3 style="font-family: var(--font-heading-2); font-weight: 700; font-size: 1.35rem; color: var(--color-text-heading); display: flex; align-items: center; gap: 8px; margin: 0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                Achievements
+            </h3>
+            
+            <div class="achievements-grid">
+                <!-- Badge 1: Unlocked -->
+                <div class="achievement-premium-badge-card unlocked">
+                    <div class="achievement-badge-icon-box">🏆</div>
+                    <h4 style="font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; margin: 0; color: var(--color-text-heading);">First Lesson</h4>
+                    <span class="achievement-status-tag unlocked">Unlocked</span>
+                </div>
+
+                <!-- Badge 2: Unlocked -->
+                <div class="achievement-premium-badge-card unlocked">
+                    <div class="achievement-badge-icon-box">🔥</div>
+                    <h4 style="font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; margin: 0; color: var(--color-text-heading);">7-Day Streak</h4>
+                    <span class="achievement-status-tag unlocked">Unlocked</span>
+                </div>
+
+                <!-- Badge 3: Unlocked -->
+                <div class="achievement-premium-badge-card unlocked">
+                    <div class="achievement-badge-icon-box">🚀</div>
+                    <h4 style="font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; margin: 0; color: var(--color-text-heading);">First Project</h4>
+                    <span class="achievement-status-tag unlocked">Unlocked</span>
+                </div>
+
+                <!-- Badge 4: Locked -->
+                <div class="achievement-premium-badge-card locked">
+                    <div class="achievement-badge-icon-box">👥</div>
+                    <h4 style="font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; margin: 0; color: #888;">Joined Comm</h4>
+                    <span class="achievement-status-tag locked">Locked</span>
+                </div>
+
+                <!-- Badge 5: Locked -->
+                <div class="achievement-premium-badge-card locked">
+                    <div class="achievement-badge-icon-box">🎯</div>
+                    <h4 style="font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; margin: 0; color: #888;">Challenge Done</h4>
+                    <span class="achievement-status-tag locked">Locked</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM SECTION: Luma AI Summary -->
+        <div class="dash-premium-card" style="background: linear-gradient(135deg, rgba(167, 117, 201, 0.04) 0%, rgba(212, 128, 187, 0.04) 100%); border-color: rgba(167, 117, 201, 0.25); border-radius: 24px; padding: 2.5rem; margin-top: 1.5rem; gap: 1rem;">
+            <span class="card-header-title" style="color: var(--color-primary); font-family: var(--font-heading-2); font-size: 1.25rem; font-weight: 700;">
+                <svg class="sparkle-ai-pulse" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                Luma AI Summary
+            </span>
+            <p style="font-size: 1.05rem; line-height: 1.6; color: var(--color-text-body); margin: 0;" id="sum-ai-summary-text">
+                "You've shown consistent progress in UI/UX Design over the past few weeks. Your learning pattern indicates curiosity, creativity and dedication. You've completed foundational concepts and actively participated in the community. Based on your consistency, you're ready to begin more advanced topics such as Information Architecture and Interactive Prototyping. Keep maintaining your streak and continue building projects to strengthen your portfolio."
+            </p>
+        </div>
+
+        <!-- MOTIVATIONAL QUOTE -->
+        <div style="text-align: center; margin-top: 2rem; margin-bottom: 2rem;">
+            <p style="font-family: 'DM Serif Display', serif; font-size: 1.75rem; color: var(--color-primary); margin: 0; line-height: 1.45;">
+                "Progress isn't measured by perfection.<br>It's measured by consistency."
+            </p>
+        </div>
+
+        <!-- BOTTOM BUTTONS -->
+        <div style="display: flex; gap: 1.25rem; justify-content: center; margin-bottom: 1rem;">
+            <button class="btn btn-solid" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; padding: 0.95rem 2.2rem; font-weight: 700; border-radius: 50px; font-size: 1rem; box-shadow: 0 4px 15px rgba(167, 117, 201, 0.25);" onclick="window.location.href='learning.html';">Continue Learning</button>
+            <button class="btn btn-outline" style="border: 1.5px solid var(--color-primary); color: var(--color-primary); padding: 0.95rem 2.2rem; font-weight: 700; border-radius: 50px; font-size: 1rem; background-color: var(--color-white);" onclick="alert('Viewing your Luma learning profile details...');">View Profile</button>
+        </div>
+    </main>
+
+    <!-- Visual Animations script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Retrieve dynamic career path
+            const careerPath = localStorage.getItem('luma_career_path') || 'UI/UX Design';
+            document.getElementById('sum-career-title').textContent = careerPath;
+
+            // Personalize AI Summary text
+            const aiText = document.getElementById('sum-ai-summary-text');
+            if (careerPath === 'AI Engineering') {
+                aiText.textContent = `"You've shown consistent progress in AI Engineering over the past few weeks. Your learning pattern indicates deep analytical capabilities and persistent coding dedication. You've completed neural network regression foundations and engaged with classmates. You're fully prepared to tackle advanced model training pipelines and transformers next. Keep up the fire and continue training models to build your showcase portfolio!"`;
+            } else if (careerPath === 'Full Stack Development') {
+                aiText.textContent = `"You've shown consistent progress in Full Stack Development over the past few weeks. Your developer layout indicates rapid learning patterns and solid architectural code structures. You've completed basic React flows and server API modules. You are ready to start advanced database schemas and websocket architectures. Maintain your daily developer streaks and continue shipping builds!"`;
+            }
+
+            // Animate Consistency Chart bars on load
+            setTimeout(() => {
+                const fills = document.querySelectorAll('.chart-bar-fill');
+                fills.forEach(bar => {
+                    const targetHeight = bar.parentElement.nextElementSibling ? bar.style.height : '0%';
+                    // Simply force the height animation to run
+                    bar.style.height = bar.style.height; 
+                });
+            }, 100);
+
+            // Animate Circular Progress Ring on load
+            setTimeout(() => {
+                const ring = document.getElementById('sum-circle-fill');
+                if (ring) {
+                    const radius = 54;
+                    const circumference = 2 * Math.PI * radius; // 339.29
+                    const percent = 45;
+                    const offset = circumference - (percent / 100 * circumference);
+                    ring.style.strokeDashoffset = offset;
+                }
+            }, 150);
+        });
+    </script>
+    <script src="supabase-features.js"></script>
+    <script src="p0-features.js"></script>
+    <script src="p0-ui.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recommendations | Luma</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+
+    <style>
+        /* Custom Recommendation Layout */
+        .recs-body {
+            background-color: #FCFBFF;
+            font-family: 'Inter', sans-serif;
+            color: var(--color-text-body);
+            margin: 0;
+            padding: 5rem 2rem;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            background-image: 
+                radial-gradient(circle at 90% 10%, rgba(167, 117, 201, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 10% 90%, rgba(212, 128, 187, 0.06) 0%, transparent 40%);
+        }
+        .recs-container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        /* Sparkles decoration */
+        .sparkle-decor {
+            position: absolute;
+            color: var(--color-accent);
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        /* AI Header section */
+        .recs-header-row {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .ai-title-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+        }
+        .ai-glow-icon {
+            font-size: 2.2rem;
+            animation: recsSparkle 1.8s infinite alternate;
+        }
+        @keyframes recsSparkle {
+            0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(167, 117, 201, 0.5)); }
+            100% { transform: scale(1.15); filter: drop-shadow(0 0 10px rgba(167, 117, 201, 0.85)); }
+        }
+
+        /* Card panels */
+        .recs-premium-card {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Insights grid */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        .insight-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+        .insight-bullet {
+            color: var(--color-primary);
+            font-weight: 700;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        /* Recommended Paths vertical stack */
+        .recommended-paths-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .path-recommendation-card {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral);
+            border-radius: 24px;
+            padding: 2.25rem;
+            display: flex;
+            gap: 1.75rem;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+            position: relative;
+        }
+        .path-recommendation-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--color-primary);
+            box-shadow: 0 10px 25px rgba(167, 117, 201, 0.08);
+        }
+        
+        .path-recommendation-card.selected {
+            border-color: var(--color-primary);
+            background-color: rgba(167, 117, 201, 0.02);
+            box-shadow: 0 10px 25px rgba(167, 117, 201, 0.12);
+        }
+
+        @media (max-width: 768px) {
+            .path-recommendation-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1.25rem;
+                padding: 1.75rem;
+            }
+        }
+
+        .path-icon-container {
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
+            background-color: rgba(167, 117, 201, 0.08);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            flex-shrink: 0;
+        }
+
+        .path-details-box {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .path-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-top: 0.25rem;
+        }
+        .path-meta-tag {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 50px;
+            font-weight: 600;
+            background-color: var(--color-bg);
+            color: var(--color-text-body);
+        }
+        .path-meta-tag.match {
+            background-color: var(--color-success);
+            color: #1b5329;
+        }
+
+        .path-select-wrapper {
+            flex-shrink: 0;
+        }
+        .btn-select-path {
+            background-color: var(--color-white);
+            border: 1.5px solid var(--color-primary);
+            color: var(--color-primary);
+            font-weight: 700;
+            padding: 0.75rem 1.75rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-family: var(--font-body);
+        }
+        .path-recommendation-card.selected .btn-select-path {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            border-color: transparent;
+            color: var(--color-white);
+            box-shadow: 0 4px 12px rgba(167, 117, 201, 0.25);
+        }
+
+        /* Choose your journey items */
+        .picks-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+        @media (max-width: 640px) {
+            .picks-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .pick-card-item {
+            background-color: var(--color-white);
+            border: 2.5px solid var(--color-neutral);
+            border-radius: 20px;
+            padding: 1.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--color-text-heading);
+        }
+        .pick-card-item:hover {
+            transform: translateY(-3px);
+            border-color: var(--color-primary);
+        }
+        .pick-card-item.selected {
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+            color: var(--color-white);
+            box-shadow: 0 8px 25px rgba(167, 117, 201, 0.3);
+        }
+
+        /* Bottom quote and trigger button */
+        .recs-bottom-row {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="recs-body">
+    <div class="recs-container">
+        <!-- Header Section -->
+        <header class="recs-header-row">
+            <div class="ai-title-wrapper">
+                <span class="ai-glow-icon">✨</span>
+                <h1 style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 2.8rem; color: var(--color-text-heading); margin: 0;">Your Personalized Career Analysis</h1>
+            </div>
+            <p style="font-family: var(--font-body); font-size: 1.15rem; color: var(--color-text-body); max-width: 750px; line-height: 1.6; margin: 0;">
+                Based on your answers, Luma AI analyzed your interests, personality and strengths to recommend the most suitable learning journeys for you.
+            </p>
+        </header>
+
+        <!-- SECTION 1: Personality Analysis Insights -->
+        <section class="recs-premium-card">
+            <svg class="sparkle-decor" style="top: 1.5rem; right: 1.5rem;" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></svg>
+            <h2 style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.65rem; color: var(--color-text-heading); margin: 0;">Your Personality Analysis</h2>
+            
+            <div class="insights-grid">
+                <div class="insight-item">
+                    <span class="insight-bullet">✦</span>
+                    <span>You are naturally creative and enjoy solving real-world problems.</span>
+                </div>
+                <div class="insight-item">
+                    <span class="insight-bullet">✦</span>
+                    <span>You learn best through hands-on experiences.</span>
+                </div>
+                <div class="insight-item">
+                    <span class="insight-bullet">✦</span>
+                    <span>You enjoy building ideas from scratch.</span>
+                </div>
+                <div class="insight-item">
+                    <span class="insight-bullet">✦</span>
+                    <span>You are curious and enjoy exploring new technologies.</span>
+                </div>
+                <div class="insight-item">
+                    <span class="insight-bullet">✦</span>
+                    <span>You are motivated by meaningful work rather than routine.</span>
+                </div>
+                <div class="insight-item">
+                    <span class="insight-bullet">✦</span>
+                    <span>You show strong potential in visual thinking and innovation.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: AI Recommended Careers (3 cards vertically) -->
+        <section style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <h2 style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.65rem; color: var(--color-text-heading); margin: 0;">Recommended Learning Paths</h2>
+            
+            <div class="recommended-paths-stack">
+                <!-- Recommended 1: UI/UX Designer -->
+                <div class="path-recommendation-card selected" onclick="selectPath(this, 'UI/UX Design');">
+                    <div class="path-icon-container">🎨</div>
+                    <div class="path-details-box">
+                        <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.25rem; margin: 0; color: var(--color-text-heading);">UI/UX Designer</h3>
+                        <p style="font-size: 0.95rem; margin: 0; line-height: 1.5;">Design beautiful digital experiences while solving real user problems.</p>
+                        <div class="path-meta-row">
+                            <span class="path-meta-tag match">96% Match</span>
+                            <span class="path-meta-tag">6–8 Months</span>
+                            <span class="path-meta-tag">Beginner Friendly</span>
+                            <span class="path-meta-tag" style="background-color: rgba(167,117,201,0.05); color: var(--color-primary);">Figma, UI Design, UX Research, Prototyping</span>
+                        </div>
+                    </div>
+                    <div class="path-select-wrapper">
+                        <button class="btn-select-path">Select</button>
+                    </div>
+                </div>
+
+                <!-- Recommended 2: Graphic Designer -->
+                <div class="path-recommendation-card" onclick="selectPath(this, 'Graphic Design');">
+                    <div class="path-icon-container">🖋️</div>
+                    <div class="path-details-box">
+                        <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.25rem; margin: 0; color: var(--color-text-heading);">Graphic Designer</h3>
+                        <p style="font-size: 0.95rem; margin: 0; line-height: 1.5;">Transform ideas into engaging visuals through branding, illustration and digital design.</p>
+                        <div class="path-meta-row">
+                            <span class="path-meta-tag match">91% Match</span>
+                            <span class="path-meta-tag">4–6 Months</span>
+                            <span class="path-meta-tag">Beginner Friendly</span>
+                            <span class="path-meta-tag" style="background-color: rgba(167,117,201,0.05); color: var(--color-primary);">Branding, Illustration, Layouts</span>
+                        </div>
+                    </div>
+                    <div class="path-select-wrapper">
+                        <button class="btn-select-path">Select</button>
+                    </div>
+                </div>
+
+                <!-- Recommended 3: Full Stack Developer -->
+                <div class="path-recommendation-card" onclick="selectPath(this, 'Full Stack Development');">
+                    <div class="path-icon-container">💻</div>
+                    <div class="path-details-box">
+                        <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.25rem; margin: 0; color: var(--color-text-heading);">Full Stack Developer</h3>
+                        <p style="font-size: 0.95rem; margin: 0; line-height: 1.5;">Build complete web applications using modern front-end and back-end technologies.</p>
+                        <div class="path-meta-row">
+                            <span class="path-meta-tag match">87% Match</span>
+                            <span class="path-meta-tag">9–12 Months</span>
+                            <span class="path-meta-tag">Intermediate</span>
+                            <span class="path-meta-tag" style="background-color: rgba(167,117,201,0.05); color: var(--color-primary);">HTML/CSS, React, Node.js, Database</span>
+                        </div>
+                    </div>
+                    <div class="path-select-wrapper">
+                        <button class="btn-select-path">Select</button>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="selected-path-name" value="UI/UX Design">
+        </section>
+
+        <!-- SECTION 3: YOUR PICKS (dynamically read interests) -->
+        <section style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <h2 style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.65rem; color: var(--color-text-heading); margin: 0;">Choose Your Learning Journey</h2>
+            <p style="font-size: 0.95rem; color: var(--color-text-muted); margin-top: -0.5rem;">These are the interests you entered during self-discovery. Select one to begin your path.</p>
+            
+            <div class="picks-grid" id="picks-container-element">
+                <!-- Fallback fallback values, updated dynamically by script on load -->
+                <div class="pick-card-item selected" onclick="selectPickCard(this);">UI/UX Design</div>
+                <div class="pick-card-item" onclick="selectPickCard(this);">Artificial Intelligence</div>
+                <div class="pick-card-item" onclick="selectPickCard(this);">Entrepreneurship</div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: WHY THIS MATCH? -->
+        <section class="recs-premium-card">
+            <h2 style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.65rem; color: var(--color-text-heading); margin: 0;">Why Luma Recommended This</h2>
+            <p style="font-size: 1.05rem; line-height: 1.6; margin: 0;" id="match-rationale-text">
+                Your answers show a strong combination of creativity, curiosity and problem-solving. You enjoy learning through practical experiences and naturally gravitate toward visual thinking. Based on these traits, UI/UX Design is likely to be an engaging and rewarding field for you.
+            </p>
+        </section>
+
+        <!-- BOTTOM SECTION -->
+        <footer class="recs-bottom-row">
+            <p style="font-family: 'DM Serif Display', serif; font-size: 1.65rem; color: var(--color-primary); margin: 0;">
+                "Your journey begins with one decision. Start exploring."
+            </p>
+            <button id="start-journey-btn" class="btn btn-solid" data-testid="start-career-journey-button" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; padding: 1.1rem 3.5rem; font-weight: 700; border-radius: 50px; font-size: 1.1rem; box-shadow: 0 5px 22px rgba(167, 117, 201, 0.25);">
+                Start My Journey
+            </button>
+        </footer>
+    </div>
+
+    <!-- Recommendations Manager Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const picksContainer = document.getElementById('picks-container-element');
+            const matchRationale = document.getElementById('match-rationale-text');
+            const startBtn = document.getElementById('start-journey-btn');
+
+            const aiResult = (() => {
+                try { return JSON.parse(localStorage.getItem('luma_ai_recommendations') || 'null'); } catch (error) { return null; }
+            })();
+            if (aiResult) {
+                const insightItems = document.querySelectorAll('.insight-item span:last-child');
+                (aiResult.insights || []).slice(0, insightItems.length).forEach((insight, index) => { insightItems[index].textContent = insight; });
+                const pathCards = document.querySelectorAll('.path-recommendation-card');
+                (aiResult.recommendations || []).forEach((recommendation, index) => {
+                    const card = pathCards[index];
+                    if (!card) return;
+                    const title = card.querySelector('h3');
+                    const description = card.querySelector('p');
+                    const match = card.querySelector('.path-meta-tag.match');
+                    const skills = card.querySelector('.path-meta-row .path-meta-tag:last-child');
+                    if (title) title.textContent = recommendation.career;
+                    if (description) description.textContent = recommendation.rationale;
+                    if (match) match.textContent = `${recommendation.match_percent}% Match`;
+                    if (skills) skills.textContent = (recommendation.skills || []).join(', ');
+                    card.setAttribute('data-ai-career', recommendation.career);
+                });
+                if (aiResult.selected_path) {
+                    document.getElementById('selected-path-name').value = aiResult.selected_path;
+                    matchRationale.textContent = (aiResult.recommendations || []).find(item => item.career === aiResult.selected_path)?.rationale || matchRationale.textContent;
+                }
+            }
+
+            const updateRationale = (name) => {
+                let descText = `Your answers show a strong combination of curiosity, ambition and problem-solving. Based on these traits, exploring the ${name} landscape is likely to be an engaging and rewarding field for you.`;
+                if (name.includes('UI/UX') || name.includes('Design')) {
+                    descText = `Your answers show a strong combination of creativity, curiosity and problem-solving. You enjoy learning through practical experiences and naturally gravitate toward visual thinking. Based on these traits, ${name} is likely to be an engaging and rewarding field for you.`;
+                } else if (name.includes('AI') || name.includes('Artificial') || name.includes('Data Science')) {
+                    descText = `Your answers highlight a strong affinity for logical workflows and computational problem-solving. Since you enjoy exploring new technology models and automated analytics, ${name} offers the ideal environment for your skills.`;
+                }
+                matchRationale.textContent = descText;
+            };
+
+            const updateSelectedCareer = (interest) => {
+                document.getElementById('selected-path-name').value = interest;
+                updateRationale(interest);
+            };
+
+            // Load saved interests dynamically
+            const answersStr = localStorage.getItem('luma_assessment_answers');
+            if (answersStr) {
+                try {
+                    const answers = JSON.parse(answersStr);
+                    if (answers.interests && answers.interests.length >= 3) {
+                        // Clear picks and render
+                        picksContainer.innerHTML = '';
+                        answers.interests.forEach((interest, idx) => {
+                            const card = document.createElement('div');
+                            card.className = `pick-card-item ${idx === 0 ? 'selected' : ''}`;
+                            card.textContent = interest;
+                            card.onclick = () => selectPickCard(card);
+                            picksContainer.appendChild(card);
+                        });
+                        
+                        // Select default career match based on first interest
+                        const firstInterest = answers.interests[0];
+                        updateSelectedCareer(firstInterest);
+                    }
+                } catch(e) {
+                    console.error("Error parsing assessment details", e);
+                }
+            }
+
+            // Path cards selection
+            window.selectPath = (card, pathName) => {
+                const cards = document.querySelectorAll('.path-recommendation-card');
+                cards.forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                
+                document.getElementById('selected-path-name').value = pathName;
+                
+                // Highlight the matching pick card
+                const pickCards = document.querySelectorAll('.pick-card-item');
+                pickCards.forEach(p => {
+                    if (p.textContent.trim().toLowerCase() === pathName.toLowerCase()) {
+                        p.classList.add('selected');
+                    } else {
+                        p.classList.remove('selected');
+                    }
+                });
+
+                updateRationale(pathName);
+            };
+
+            // Interest pick selection
+            window.selectPickCard = (card) => {
+                const pickCards = document.querySelectorAll('.pick-card-item');
+                pickCards.forEach(p => p.classList.remove('selected'));
+                card.classList.add('selected');
+
+                const name = card.textContent.trim();
+                document.getElementById('selected-path-name').value = name;
+
+                // Sync with recommended paths cards if exists
+                const pathCards = document.querySelectorAll('.path-recommendation-card');
+                pathCards.forEach(pc => {
+                    const title = pc.querySelector('h3').textContent.trim();
+                    if (title.toLowerCase() === name.toLowerCase()) {
+                        pc.classList.add('selected');
+                    } else {
+                        pc.classList.remove('selected');
+                    }
+                });
+
+                updateRationale(name);
+            };
+
+            // Start Journey CTA Click Handler
+            startBtn.addEventListener('click', async () => {
+                if (startBtn.disabled) return;
+
+                const selectedPath = document.getElementById('selected-path-name').value || 'UI/UX Design';
+                const originalText = startBtn.textContent;
+                startBtn.disabled = true;
+                startBtn.textContent = 'Setting up your dashboard...';
+                startBtn.style.opacity = '0.9';
+
+                try {
+                    const answersStr = localStorage.getItem('luma_assessment_answers');
+                    const assessmentData = answersStr ? JSON.parse(answersStr) : {};
+
+                    const recommendations = {
+                        selectedPath,
+                        interests: assessmentData.interests || [],
+                        completedAt: new Date().toISOString()
+                    };
+
+                    localStorage.setItem('luma_career_path', selectedPath);
+                    localStorage.setItem('luma_assessment_completed', 'true');
+                    localStorage.setItem('luma_recommendations', JSON.stringify(recommendations));
+                    const aiResult = JSON.parse(localStorage.getItem('luma_ai_recommendations') || '{}');
+                    const roadmap = aiResult.first_week_plan || [];
+                    localStorage.setItem('luma_career_roadmap', JSON.stringify({ career: selectedPath, plan: roadmap }));
+                    if (window.LumaData) {
+                        try {
+                            await window.LumaData.finalizeJourney(selectedPath, roadmap);
+                        } catch (syncError) {
+                            console.warn('Journey is cached locally because Supabase sync failed', syncError);
+                        }
+                    }
+                    window.location.replace('dashboard.html');
+                } catch (error) {
+                    console.error('Failed to finalize assessment', error);
+                    startBtn.disabled = false;
+                    startBtn.textContent = originalText;
+                    startBtn.style.opacity = '1';
+
+                    const existingError = document.getElementById('journey-error-msg');
+                    if (existingError) {
+                        existingError.textContent = 'We could not set up your dashboard. Please try again.';
+                        existingError.style.display = 'block';
+                    } else {
+                        const errorNode = document.createElement('p');
+                        errorNode.id = 'journey-error-msg';
+                        errorNode.style.cssText = 'margin-top: 0.75rem; color: #EA4335; font-size: 0.95rem;';
+                        errorNode.textContent = 'We could not set up your dashboard. Please try again.';
+                        startBtn.insertAdjacentElement('afterend', errorNode);
+                    }
+                }
+            });
+        });
+    </script>
+    <script src="supabase-features.js"></script>
+    <script src="p0-features.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

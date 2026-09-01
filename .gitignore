@@ -1,0 +1,21 @@
+# Environment / secrets
+env.txt
+backend/env.txt
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Node
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.env
+credentials.json
+*.pem
+*.key
+.credentials

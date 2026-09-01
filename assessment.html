@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discovery Assessment | Luma</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    
+    <style>
+        /* Fade in transition for premium feel */
+        @keyframes fadeInPage {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .assessment-body {
+            animation: fadeInPage 0.5s ease-out forwards;
+        }
+
+        /* Scoped override for Discovery Assessment Page */
+        .assessment-body .dash-sidebar {
+            width: 280px;
+            padding: 2.5rem 1.5rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-right: 1px solid var(--color-neutral);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            /* Disabled styles */
+            pointer-events: none;
+            opacity: 0.6;
+            filter: grayscale(1);
+        }
+
+        .assessment-body .dash-main {
+            margin-left: 280px;
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 85% 15%, rgba(167, 117, 201, 0.05) 0%, transparent 45%),
+                radial-gradient(circle at 15% 85%, rgba(212, 128, 187, 0.05) 0%, transparent 45%);
+        }
+
+        .assessment-container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .assessment-card {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral);
+            border-radius: 28px;
+            padding: 3.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+
+        /* Sparkles decoration */
+        .sparkle-decor {
+            position: absolute;
+            color: var(--color-accent);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* Progress Bar styles */
+        .progress-indicator-container {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .progress-text {
+            font-family: var(--font-body);
+            font-weight: 600;
+            color: var(--color-primary);
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .progress-bar-outer {
+            width: 100%;
+            height: 8px;
+            background-color: var(--color-neutral);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-secondary), var(--color-primary));
+            width: 20%;
+            border-radius: 4px;
+            transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Question boxes transitions */
+        .question-step {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+            animation: fadeInAssessment 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .question-step.active {
+            display: flex;
+        }
+
+        @keyframes fadeInAssessment {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 2rem;
+            color: var(--color-text-heading);
+            line-height: 1.3;
+            margin: 0;
+        }
+        .question-description {
+            font-family: var(--font-body);
+            font-size: 1.05rem;
+            color: var(--color-text-body);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* Input Controls */
+        .assessment-input-box {
+            width: 100%;
+            padding: 1.1rem 1.5rem;
+            border: 1.5px solid var(--color-neutral);
+            border-radius: 16px;
+            font-family: var(--font-body);
+            font-size: 1.05rem;
+            color: var(--color-text-heading);
+            background-color: var(--color-bg);
+            transition: var(--transition-smooth);
+        }
+        .assessment-input-box:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px rgba(167, 117, 201, 0.15);
+            background-color: var(--color-white);
+        }
+
+        .assessment-textarea {
+            min-height: 160px;
+            resize: vertical;
+        }
+
+        /* Selection Cards (Question 5) */
+        .option-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .option-cards-grid {
+                grid-template-columns: 1fr;
+            }
+            .assessment-body .dash-sidebar {
+                display: none;
+            }
+            .assessment-body .dash-main {
+                margin-left: 0;
+                padding: 2rem 1rem;
+            }
+            .assessment-card {
+                padding: 2rem 1.5rem;
+            }
+        }
+
+        .selection-premium-card {
+            background-color: var(--color-white);
+            border: 2px solid var(--color-neutral);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .selection-premium-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 15px rgba(167, 117, 201, 0.08);
+        }
+        .selection-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background-color: rgba(167, 117, 201, 0.08);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .selection-premium-card.selected {
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+            color: var(--color-white);
+            box-shadow: 0 8px 25px rgba(167, 117, 201, 0.3);
+        }
+        .selection-premium-card.selected .selection-icon-wrapper {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: var(--color-white);
+        }
+        .selection-premium-card.selected h4 {
+            color: var(--color-white) !important;
+        }
+
+        /* Bottom Section Styles */
+        .assessment-bottom-row {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="dash-body assessment-body">
+    <!-- Sidebar Navigation (Disabled / Mandatory Assessment Cover) -->
+    <aside class="dash-sidebar">
+        <div>
+            <div class="sidebar-brand">
+                <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGradAssess" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#D480BB" />
+                            <stop offset="100%" stop-color="#A775C9" />
+                        </linearGradient>
+                    </defs>
+                    <mask id="logoLMaskAssess">
+                        <rect width="100" height="100" fill="white" />
+                        <path d="M 44,28 H 52 V 58 H 68 V 66 H 44 Z" fill="black" />
+                    </mask>
+                    <path d="M 50,5 C 50,30 30,50 5,50 C 30,50 50,70 50,95 C 50,70 70,50 95,50 C 70,50 50,30 50,5 Z" fill="url(#logoGradAssess)" mask="url(#logoLMaskAssess)" />
+                </svg>
+                <span class="logo-text" style="font-size: 1.4rem;">Luma</span>
+            </div>
+
+            <nav class="sidebar-links">
+                <a href="#" class="sidebar-item active">Dashboard</a>
+                <a href="#" class="sidebar-item">Learning Hub</a>
+                <a href="#" class="sidebar-item">Journey</a>
+                <a href="#" class="sidebar-item">Explorer Hub</a>
+                <a href="#" class="sidebar-item">Summary</a>
+            </nav>
+        </div>
+        <div class="sidebar-profile">
+            <span>Profile</span>
+        </div>
+    </aside>
+
+    <!-- Main Container -->
+    <main class="dash-main">
+        <div class="assessment-container">
+            <!-- Header Section -->
+            <div style="text-align: center; display: flex; flex-direction: column; gap: 0.5rem;">
+                <h1 style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 2.8rem; color: var(--color-text-heading); margin: 0;">Discover Yourself</h1>
+                <p style="font-family: var(--font-body); font-size: 1.15rem; color: var(--color-text-body); margin: 0;">"Before choosing your future, let's understand who you are."</p>
+            </div>
+
+            <!-- Progress Tracker -->
+            <div class="progress-indicator-container">
+                <div class="progress-text" id="progress-indicator-text" data-testid="assessment-progress-label">Question 1 of 5</div>
+                <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" id="progress-indicator-fill"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="assessment-card">
+                <!-- Subtle Sparkles Decoration -->
+                <svg class="sparkle-decor" style="top: 2rem; right: 2rem;" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></svg>
+                <svg class="sparkle-decor" style="bottom: 2rem; left: 2rem;" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></svg>
+
+                <form id="assessment-form" onsubmit="event.preventDefault();">
+                    <!-- QUESTION 1 -->
+                    <div class="question-step active" id="step-1">
+                        <h2 class="question-title">What are your top three interests in career fields?</h2>
+                        <p class="question-description">Think about the fields that genuinely excite you. Enter them below.</p>
+                        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+                            <input type="text" id="interest-1" class="assessment-input-box" placeholder="e.g., UI/UX Design" required data-testid="assessment-interest-one-input">
+                            <input type="text" id="interest-2" class="assessment-input-box" placeholder="e.g., Artificial Intelligence" required data-testid="assessment-interest-two-input">
+                            <input type="text" id="interest-3" class="assessment-input-box" placeholder="e.g., Entrepreneurship" required data-testid="assessment-interest-three-input">
+                        </div>
+                    </div>
+
+                    <!-- QUESTION 2 -->
+                    <div class="question-step" id="step-2">
+                        <h2 class="question-title">Which activity makes you lose track of time?</h2>
+                        <p class="question-description">Think about something you enjoy so much that hours pass without noticing.</p>
+                        <textarea id="time-loss-activity" class="assessment-input-box assessment-textarea" placeholder="Example: &quot;I enjoy designing interfaces and experimenting with colors.&quot;" required data-testid="assessment-flow-activity-input"></textarea>
+                    </div>
+
+                    <!-- QUESTION 3 -->
+                    <div class="question-step" id="step-3">
+                        <h2 class="question-title">What's one thing you're confident in doing but not an expert at yet?</h2>
+                        <p class="question-description">Choose something you naturally enjoy and believe you can improve.</p>
+                        <textarea id="confident-skill" class="assessment-input-box assessment-textarea" placeholder="Example: &quot;I enjoy editing videos and believe I could become really good with practice.&quot;" required data-testid="assessment-strength-input"></textarea>
+                    </div>
+
+                    <!-- QUESTION 4 -->
+                    <div class="question-step" id="step-4">
+                        <h2 class="question-title">If failure wasn't a problem, what would you like to pursue?</h2>
+                        <p class="question-description">Imagine there were no risks, judgments, or financial constraints.</p>
+                        <textarea id="pursuit-dream" class="assessment-input-box assessment-textarea" placeholder="Example: &quot;I would love to build my own startup that helps students.&quot;" required data-testid="assessment-aspiration-input"></textarea>
+                    </div>
+
+                    <!-- QUESTION 5 -->
+                    <div class="question-step" id="step-5">
+                        <h2 class="question-title">Which statement describes you the best?</h2>
+                        <p class="question-description">Select the option that aligns most closely with your personality.</p>
+                        
+                        <div class="option-cards-grid">
+                            <!-- Option 1 -->
+                            <div class="selection-premium-card" data-val="Option 1" onclick="selectOptionCard(this);" data-testid="assessment-profile-problem-solver">
+                                <div class="selection-icon-wrapper">🧠</div>
+                                <div>
+                                    <h4 style="font-family: var(--font-body); font-weight: 700; font-size: 1.05rem; margin: 0 0 0.25rem 0; color: var(--color-text-heading);">Problem Solver</h4>
+                                    <p style="font-size: 0.9rem; margin: 0; line-height: 1.4;">I love solving logical and technical problems.</p>
+                                </div>
+                            </div>
+                            <!-- Option 2 -->
+                            <div class="selection-premium-card" data-val="Option 2" onclick="selectOptionCard(this);" data-testid="assessment-profile-visual-creator">
+                                <div class="selection-icon-wrapper">🎨</div>
+                                <div>
+                                    <h4 style="font-family: var(--font-body); font-weight: 700; font-size: 1.05rem; margin: 0 0 0.25rem 0; color: var(--color-text-heading);">Visual Creator</h4>
+                                    <p style="font-size: 0.9rem; margin: 0; line-height: 1.4;">I enjoy designing, creating and expressing ideas visually.</p>
+                                </div>
+                            </div>
+                            <!-- Option 3 -->
+                            <div class="selection-premium-card" data-val="Option 3" onclick="selectOptionCard(this);" data-testid="assessment-profile-leader">
+                                <div class="selection-icon-wrapper">🚀</div>
+                                <div>
+                                    <h4 style="font-family: var(--font-body); font-weight: 700; font-size: 1.05rem; margin: 0 0 0.25rem 0; color: var(--color-text-heading);">Leader</h4>
+                                    <p style="font-size: 0.9rem; margin: 0; line-height: 1.4;">I enjoy leading people and turning ideas into reality.</p>
+                                </div>
+                            </div>
+                            <!-- Option 4 -->
+                            <div class="selection-premium-card" data-val="Option 4" onclick="selectOptionCard(this);" data-testid="assessment-profile-guide">
+                                <div class="selection-icon-wrapper">💖</div>
+                                <div>
+                                    <h4 style="font-family: var(--font-body); font-weight: 700; font-size: 1.05rem; margin: 0 0 0.25rem 0; color: var(--color-text-heading);">Guide</h4>
+                                    <p style="font-size: 0.9rem; margin: 0; line-height: 1.4;">I enjoy understanding people and helping them grow.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selected-profile-statement" required>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Bottom Section Quote & Trigger -->
+            <div class="assessment-bottom-row">
+                <p style="font-family: 'DM Serif Display', serif; font-size: 1.6rem; font-weight: normal; color: var(--color-primary); margin: 0; line-height: 1.4;">
+                    "Discover yourself before deciding your future."
+                </p>
+                <button id="assessment-continue-btn" class="btn btn-solid" data-testid="assessment-continue-button" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; padding: 1rem 3.5rem; font-weight: 700; border-radius: 50px; font-size: 1.05rem; box-shadow: 0 5px 20px rgba(167, 117, 201, 0.25);">
+                    Continue
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Assessment Flow Manager Logic -->
+    <script>
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        const stepViews = [
+            document.getElementById('step-1'),
+            document.getElementById('step-2'),
+            document.getElementById('step-3'),
+            document.getElementById('step-4'),
+            document.getElementById('step-5')
+        ];
+
+        const textIndicator = document.getElementById('progress-indicator-text');
+        const fillIndicator = document.getElementById('progress-indicator-fill');
+        const continueBtn = document.getElementById('assessment-continue-btn');
+        let generatedQuestions = [];
+
+        // Selection Cards logic
+        window.selectOptionCard = (card) => {
+            const allCards = document.querySelectorAll('.selection-premium-card');
+            allCards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.getElementById('selected-profile-statement').value = card.getAttribute('data-val');
+        };
+
+        const assessmentApi = window.LUMA_API_BASE || '/api';
+        const authHeaders = () => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('luma_auth_token') || ''}` });
+
+        let currentAnswers = {};
+
+const fetchQuestionSet = async (answersSoFar) => {
+    const response = await fetch(`${assessmentApi}/assessment/questions`, {
+        method: 'POST', headers: authHeaders(), body: JSON.stringify({ answers: answersSoFar })
+    });
+    if (!response.ok) {
+        console.error('Question generation failed', response.status, await response.text());
+        return null;
+    }
+    const result = await response.json();
+    return result.questions || [];
+};
+
+const applyQuestionToStep = (stepIndex, question) => {
+    const title = document.querySelector(`#step-${stepIndex + 1} .question-title`);
+    const description = document.querySelector(`#step-${stepIndex + 1} .question-description`);
+    if (title && question?.question) title.textContent = question.question;
+    if (description && question?.description) description.textContent = question.description;
+};
+
+const loadPersonalizedQuestions = async () => {
+    if (localStorage.getItem('luma_guest_mode') === 'true') return;
+    try {
+        if (window.lumaAuthReady) await window.lumaAuthReady;
+        const questions = await fetchQuestionSet({});
+        if (questions) { generatedQuestions = questions; applyQuestionToStep(0, questions[0]); }
+    } catch (error) {
+        console.warn('Personalized question generation unavailable', error);
+    }
+};
+loadPersonalizedQuestions();
+
+          // Continue trigger
+        continueBtn.addEventListener('click', async () => {
+            // Validate current step
+            if (!validateCurrentStep()) {
+                alert('Please answer the question before continuing.');
+                return;
+            }
+
+            if (currentStep === 1) currentAnswers.interests = [document.getElementById('interest-1').value.trim(), document.getElementById('interest-2').value.trim(), document.getElementById('interest-3').value.trim()];
+            if (currentStep === 2) currentAnswers.timeLoss = document.getElementById('time-loss-activity').value.trim();
+            if (currentStep === 3) currentAnswers.confidentSkill = document.getElementById('confident-skill').value.trim();
+            if (currentStep === 4) currentAnswers.pursuitDream = document.getElementById('pursuit-dream').value.trim();
+
+            if (currentStep < totalSteps) {
+                // Advance step
+                stepViews[currentStep - 1].classList.remove('active');
+                currentStep++;
+                stepViews[currentStep - 1].classList.add('active');
+
+                const freshQuestions = await fetchQuestionSet(currentAnswers);
+                if (freshQuestions) { generatedQuestions = freshQuestions; applyQuestionToStep(currentStep - 1, freshQuestions[currentStep - 1]); }
+
+                // Update progress bar
+                textIndicator.textContent = `Question ${currentStep} of ${totalSteps}`;
+                fillIndicator.style.width = `${(currentStep / totalSteps) * 100}%`;
+            } else {
+                // Done! Save to localStorage
+                const answers = saveAssessmentAnswers();
+                continueBtn.disabled = true;
+                continueBtn.textContent = 'Analyzing your answers...';
+                try {
+                    const guestMode = localStorage.getItem('luma_guest_mode') === 'true';
+                    let analysis;
+                    if (guestMode) {
+                        analysis = {
+                            insights: [
+                                'You enjoy turning open-ended ideas into practical outcomes.',
+                                'Your answers show curiosity about people, systems, and visual problem-solving.',
+                                'Hands-on projects are likely to help you learn faster than passive study.',
+                                'A balanced design and technology path gives you room to explore.'
+                            ],
+                            recommendations: [
+                                { career: 'UI/UX Designer', match_percent: 94, rationale: 'A strong match for creative problem-solving and understanding how people use products.', skills: ['user research', 'interaction design', 'prototyping'] },
+                                { career: 'Product Manager', match_percent: 88, rationale: 'A practical path for connecting user needs, priorities, and collaborative delivery.', skills: ['product strategy', 'customer discovery', 'communication'] },
+                                { career: 'Frontend Engineer', match_percent: 84, rationale: 'A hands-on direction for turning visual ideas into responsive digital experiences.', skills: ['javascript', 'accessibility', 'responsive design'] }
+                            ],
+                            selected_path: 'UI/UX Designer',
+                            first_week_plan: [
+                                { day: 1, title: 'Design Thinking Foundations', objective: 'Understand the five-stage design process.', duration_minutes: 25 },
+                                { day: 2, title: 'User Interview Basics', objective: 'Practice asking neutral discovery questions.', duration_minutes: 30 },
+                                { day: 3, title: 'Sketch a User Flow', objective: 'Map a simple task from entry to success.', duration_minutes: 30 },
+                                { day: 4, title: 'Wireframe the Core Screen', objective: 'Turn the user flow into a low-fidelity layout.', duration_minutes: 35 },
+                                { day: 5, title: 'Accessibility Review', objective: 'Check hierarchy, contrast, and keyboard flow.', duration_minutes: 25 },
+                                { day: 6, title: 'Prototype a Key Interaction', objective: 'Connect the most important screens.', duration_minutes: 40 },
+                                { day: 7, title: 'Reflect and Share', objective: 'Summarize what worked and what you would improve.', duration_minutes: 20 }
+                            ]
+                        };
+                    } else {
+                        const response = await fetch(`${assessmentApi}/assessment/analyze`, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ answers }) });
+                        if (!response.ok) throw new Error('Analysis unavailable');
+                        analysis = await response.json();
+                    }
+                    localStorage.setItem('luma_ai_recommendations', JSON.stringify(analysis));
+                    localStorage.setItem('luma_career_roadmap', JSON.stringify({ career: analysis.selected_path, plan: analysis.first_week_plan || [] }));
+                    if (window.LumaData) {
+                        try {
+                            await window.LumaData.saveAssessment({ questions: generatedQuestions, answers, analysis });
+                        } catch (syncError) {
+                            console.warn('Assessment is cached locally because Supabase sync failed', syncError);
+                        }
+                    }
+                } catch (error) {
+                    console.error('AI assessment analysis unavailable', error);
+                    continueBtn.disabled = false;
+                    continueBtn.textContent = 'Try Analysis Again';
+                    alert('Luma could not analyze your answers. Please try again.');
+                    return;
+                }
+                window.location.replace('recommendations.html');
+            }
+        });
+
+        const validateCurrentStep = () => {
+            if (currentStep === 1) {
+                const i1 = document.getElementById('interest-1').value.trim();
+                const i2 = document.getElementById('interest-2').value.trim();
+                const i3 = document.getElementById('interest-3').value.trim();
+                return i1 !== '' && i2 !== '' && i3 !== '';
+            } else if (currentStep === 2) {
+                return document.getElementById('time-loss-activity').value.trim() !== '';
+            } else if (currentStep === 3) {
+                return document.getElementById('confident-skill').value.trim() !== '';
+            } else if (currentStep === 4) {
+                return document.getElementById('pursuit-dream').value.trim() !== '';
+            } else if (currentStep === 5) {
+                return document.getElementById('selected-profile-statement').value !== '';
+            }
+            return false;
+        };
+
+        const saveAssessmentAnswers = () => {
+            const answers = {
+                interests: [
+                    document.getElementById('interest-1').value.trim(),
+                    document.getElementById('interest-2').value.trim(),
+                    document.getElementById('interest-3').value.trim()
+                ],
+                timeLoss: document.getElementById('time-loss-activity').value.trim(),
+                confidentSkill: document.getElementById('confident-skill').value.trim(),
+                pursuitDream: document.getElementById('pursuit-dream').value.trim(),
+                selectedProfile: document.getElementById('selected-profile-statement').value
+            };
+            localStorage.setItem('luma_assessment_answers', JSON.stringify(answers));
+            return answers;
+        };
+    </script>
+    <script src="supabase-features.js"></script>
+    <script src="p0-features.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

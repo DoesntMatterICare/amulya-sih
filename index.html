@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luma — Discover Yourself, Explore Your Future</title>
+    <meta name="description" content="Luma is an AI-powered career exploration platform that helps you discover, learn, and grow through real-world experiences and reflection.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Background Sparkles / Twinkling Stars -->
+    <div class="stars-container" aria-hidden="true">
+        <div class="star star-1"></div>
+        <div class="star star-2"></div>
+        <div class="star star-3"></div>
+        <div class="star star-4"></div>
+        <div class="star star-5"></div>
+        <div class="star star-6"></div>
+        <div class="star star-7"></div>
+        <div class="star star-8"></div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar-header" id="navbar">
+        <div class="nav-container">
+            <a href="#home" class="nav-logo" id="nav-logo-link">
+                <!-- Sparkle SVG Logo matching image -->
+                <svg class="logo-icon" width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#D480BB" />
+                            <stop offset="100%" stop-color="#A775C9" />
+                        </linearGradient>
+                    </defs>
+                    <mask id="logoLMask">
+                        <rect width="100" height="100" fill="white" />
+                        <path d="M 44,28 H 52 V 58 H 68 V 66 H 44 Z" fill="black" />
+                    </mask>
+                    <path d="M 50,5 C 50,30 30,50 5,50 C 30,50 50,70 50,95 C 50,70 70,50 95,50 C 70,50 50,30 50,5 Z" fill="url(#logoGrad)" mask="url(#logoLMask)" />
+                    <path d="M 42,20 C 29,20 20,29 20,42" stroke="#D480BB" stroke-width="3" stroke-linecap="round" fill="none" />
+                    <path d="M 58,80 C 71,80 80,71 80,58" stroke="#A775C9" stroke-width="3" stroke-linecap="round" fill="none" />
+                    <path d="M 78,19 C 78,22 75,25 72,25 C 75,25 78,28 78,31 C 78,28 81,25 84,25 C 81,25 78,22 78,19 Z" fill="#A775C9" />
+                    <path d="M 22,69 C 22,72 19,75 16,75 C 19,75 22,78 22,81 C 22,78 25,75 28,75 C 25,75 22,72 22,69 Z" fill="#D480BB" />
+                </svg>
+                <span class="logo-text">Luma</span>
+            </a>
+
+            <!-- Mobile Navigation Toggle -->
+            <button class="mobile-nav-toggle" id="mobile-toggle" aria-label="Toggle navigation menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <!-- Navigation Links -->
+            <nav class="nav-links-wrapper" id="nav-menu">
+                <ul class="nav-links-list">
+                    <li><a href="#home" class="nav-link active">Home</a></li>
+                    <li><a href="#features" class="nav-link">Features</a></li>
+                    <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+                    <li><a href="#community" class="nav-link">Community</a></li>
+                    <li><a href="#about" class="nav-link">About</a></li>
+                </ul>
+                <div class="nav-actions-mobile" id="nav-actions-mobile-wrapper">
+                    <a href="auth.html" class="btn btn-outline" id="btn-login-mobile">Log In</a>
+                    <a href="auth.html#signup" class="btn btn-solid" id="btn-signup-mobile">Sign Up</a>
+                </div>
+                <!-- Profile Avatar Mobile Dropdown Menu -->
+                <div class="profile-menu-container" id="profile-menu-mobile" style="display: none; margin-top: 1.5rem; width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1rem; justify-content: flex-end;">
+                        <button class="profile-avatar-btn" id="avatar-btn-mobile" aria-label="Open profile menu">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="User Profile" class="profile-avatar-img">
+                        </button>
+                    </div>
+                    <div class="profile-dropdown-menu" id="dropdown-menu-mobile" style="position: static; width: 100%; box-shadow: none; border: 1px solid var(--color-neutral); margin-top: 0.75rem;">
+                        <div class="dropdown-user-info">
+                            <p class="dropdown-user-name" id="dropdown-name-mobile">Amulya Tanneru</p>
+                            <p class="dropdown-user-email" id="dropdown-email-mobile">you@example.com</p>
+                        </div>
+                        <div class="dropdown-links-list">
+                            <a href="assessment.html" class="dropdown-item-link">Discovery Assessment</a>
+                        </div>
+                        <button class="btn-logout logout-action-btn">Log Out</button>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="nav-actions-desktop" id="nav-actions-desktop-wrapper">
+                <a href="auth.html" class="btn btn-outline" id="btn-login-desktop">Log In</a>
+                <a href="auth.html#signup" class="btn btn-solid" id="btn-signup-desktop">Sign Up</a>
+            </div>
+
+            <!-- Profile Avatar Desktop Dropdown Menu -->
+            <div class="profile-menu-container" id="profile-menu-desktop" style="display: none; margin-left: 1.25rem;">
+                <div style="display: flex; align-items: center; gap: 0.85rem;">
+                    <button class="profile-avatar-btn" id="avatar-btn-desktop" aria-label="Open profile menu">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="User Profile" class="profile-avatar-img">
+                    </button>
+                </div>
+                <div class="profile-dropdown-menu" id="dropdown-menu-desktop">
+                    <div class="dropdown-user-info">
+                        <p class="dropdown-user-name" id="dropdown-name-desktop">Amulya Tanneru</p>
+                        <p class="dropdown-user-email" id="dropdown-email-desktop">you@example.com</p>
+                    </div>
+                    <div class="dropdown-links-list">
+                        <a href="assessment.html" class="dropdown-item-link">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            <span>Discovery Assessment</span>
+                        </a>
+                    </div>
+                    <button class="btn-logout logout-action-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        <span>Log Out</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-section" id="home">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1 class="hero-heading">
+                        <span class="hero-line-1">Don't Decide<br>Your Future,</span>
+                        <span class="hero-line-2">Explore It.</span>
+                    </h1>
+                    <p class="hero-paragraph">
+                        Discover yourself before deciding your future. Luma helps students explore careers through AI-powered guidance, personalized learning paths, communities and structured exploration.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#assessment-preview" class="btn btn-solid btn-large" id="hero-primary-btn">Start Exploring</a>
+                        <a href="#features" class="btn btn-outline btn-large" id="hero-secondary-btn">Learn More</a>
+                    </div>
+                </div>
+                
+                <div class="hero-illustration-area">
+                    <div class="illustration-halo"></div>
+                    <div class="illustration-pink-glow"></div>
+                    <div class="illustration-lavender-glow"></div>
+                    
+                    <!-- Orbiting Career Icons & Tags -->
+                    <div class="orbiting-icons" aria-hidden="true">
+                        <!-- UI/UX Tag -->
+                        <div class="orbit-icon icon-uiux">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            <span>UI/UX</span>
+                        </div>
+                        <!-- AI Tag -->
+                        <div class="orbit-icon icon-ai">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                            <span>AI</span>
+                        </div>
+                        <!-- Programming Tag -->
+                        <div class="orbit-icon icon-programming">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            <span>Programming</span>
+                        </div>
+                        <!-- Business Tag -->
+                        <div class="orbit-icon icon-business">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                            <span>Business</span>
+                        </div>
+                        <!-- Graphic Design Tag -->
+                        <div class="orbit-icon icon-design">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="12 8 8 12 12 16 16 12 12 8"></polygon></svg>
+                            <span>Graphic Design</span>
+                        </div>
+                        <!-- Cybersecurity Tag -->
+                        <div class="orbit-icon icon-cybersecurity">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            <span>Cybersecurity</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Astronaut Illustration with Blended Edges -->
+                    <div class="astronaut-wrapper">
+                        <img src="assets/astronaut_on_planet.jpg" alt="A cute astronaut sitting peacefully on a glowing lavender planet while working on a laptop" class="astronaut-img" id="hero-astronaut-image">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive AI Matcher Demo -->
+        <section class="interactive-preview-section" id="assessment-preview">
+            <div class="section-container">
+                <div class="preview-header">
+                    <span class="section-tag">Interactive Preview</span>
+                    <h2 class="section-title">See Luma's AI matching in action</h2>
+                    <p class="section-subtitle">Select an interest below to see how our AI assessment recommends customized learning pathways.</p>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-interests-row">
+                        <button class="interest-btn active" data-career="creative">Creative & Design</button>
+                        <button class="interest-btn" data-career="engineering">Engineering & Code</button>
+                        <button class="interest-btn" data-career="business">Product & Business</button>
+                        <button class="interest-btn" data-career="science">AI & Research</button>
+                    </div>
+                    <div class="demo-result-container">
+                        <div class="demo-result-card active" id="demo-creative">
+                            <div class="demo-card-left">
+                                <div class="badge-row">
+                                    <span class="path-badge match">96% AI Match</span>
+                                    <span class="path-badge duration">12-Week Roadmap</span>
+                                </div>
+                                <h3 class="path-title">UX/UI Designer</h3>
+                                <p class="path-description">Translate user needs into beautiful, functional digital products. This path guides you through visual hierarchy, user research, wireframing, and Figma prototyping.</p>
+                                <div class="path-skills">
+                                    <span class="skill-tag">Interaction Design</span>
+                                    <span class="skill-tag">Prototyping</span>
+                                    <span class="skill-tag">User Research</span>
+                                </div>
+                            </div>
+                            <div class="demo-card-right">
+                                <div class="week-progress-wrapper">
+                                    <div class="week-header">
+                                        <span>Current Progress</span>
+                                        <span class="week-pct">Week 4 of 12 (33%)</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-bar" style="width: 33%;"></div>
+                                    </div>
+                                    <ul class="progress-bullets">
+                                        <li class="done">Week 1: Design Principles & Grid Systems</li>
+                                        <li class="done">Week 2: Color Theory & Modern Typography</li>
+                                        <li class="active">Week 3: Wireframing & Information Architecture</li>
+                                        <li>Week 4: Interactive Prototyping in Figma</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="demo-result-card" id="demo-engineering" style="display: none;">
+                            <div class="demo-card-left">
+                                <div class="badge-row">
+                                    <span class="path-badge match">94% AI Match</span>
+                                    <span class="path-badge duration">16-Week Roadmap</span>
+                                </div>
+                                <h3 class="path-title">Frontend Engineer</h3>
+                                <p class="path-description">Build interactive, responsive web applications. This roadmap covers modern HTML/CSS layout techniques, JavaScript fundamentals, Git version control, and React framework basics.</p>
+                                <div class="path-skills">
+                                    <span class="skill-tag">HTML5 & CSS Grid</span>
+                                    <span class="skill-tag">JavaScript ES6</span>
+                                    <span class="skill-tag">React Hooks</span>
+                                </div>
+                            </div>
+                            <div class="demo-card-right">
+                                <div class="week-progress-wrapper">
+                                    <div class="week-header">
+                                        <span>Current Progress</span>
+                                        <span class="week-pct">Week 2 of 16 (12%)</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-bar" style="width: 12.5%;"></div>
+                                    </div>
+                                    <ul class="progress-bullets">
+                                        <li class="done">Week 1: Web Fundamentals & Semantics</li>
+                                        <li class="active">Week 2: Advanced Layout (Flexbox & CSS Grid)</li>
+                                        <li>Week 3: Logic flow & Dom Manipulation</li>
+                                        <li>Week 4: Version Control with Git & GitHub</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="demo-result-card" id="demo-business" style="display: none;">
+                            <div class="demo-card-left">
+                                <div class="badge-row">
+                                    <span class="path-badge match">89% AI Match</span>
+                                    <span class="path-badge duration">8-Week Roadmap</span>
+                                </div>
+                                <h3 class="path-title">Product Manager</h3>
+                                <p class="path-description">Own the product vision, prioritize features, and coordinate cross-functional teams. Learn how to conduct competitor research, write PRDs, and define success metrics.</p>
+                                <div class="path-skills">
+                                    <span class="skill-tag">Agile Methodologies</span>
+                                    <span class="skill-tag">Competitor Analysis</span>
+                                    <span class="skill-tag">Roadmapping</span>
+                                </div>
+                            </div>
+                            <div class="demo-card-right">
+                                <div class="week-progress-wrapper">
+                                    <div class="week-header">
+                                        <span>Current Progress</span>
+                                        <span class="week-pct">Week 1 of 8 (12%)</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-bar" style="width: 12.5%;"></div>
+                                    </div>
+                                    <ul class="progress-bullets">
+                                        <li class="active">Week 1: Foundations of Product Management</li>
+                                        <li>Week 2: Customer Discovery & Interviews</li>
+                                        <li>Week 3: Writing Product Requirement Docs (PRDs)</li>
+                                        <li>Week 4: Prioritization Frameworks (RICE)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="demo-result-card" id="demo-science" style="display: none;">
+                            <div class="demo-card-left">
+                                <div class="badge-row">
+                                    <span class="path-badge match">98% AI Match</span>
+                                    <span class="path-badge duration">20-Week Roadmap</span>
+                                </div>
+                                <h3 class="path-title">Machine Learning Researcher</h3>
+                                <p class="path-description">Dive into data science, model architecture, and artificial intelligence. This advanced path covers Python mathematics, statistics, PyTorch neural networks, and model deployment.</p>
+                                <div class="path-skills">
+                                    <span class="skill-tag">Python & NumPy</span>
+                                    <span class="skill-tag">Linear Algebra</span>
+                                    <span class="skill-tag">PyTorch Training</span>
+                                </div>
+                            </div>
+                            <div class="demo-card-right">
+                                <div class="week-progress-wrapper">
+                                    <div class="week-header">
+                                        <span>Current Progress</span>
+                                        <span class="week-pct">Week 5 of 20 (25%)</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-bar" style="width: 25%;"></div>
+                                    </div>
+                                    <ul class="progress-bullets">
+                                        <li class="done">Week 1-3: Python, NumPy & Pandas foundations</li>
+                                        <li class="done">Week 4: Statistics & Probability for ML</li>
+                                        <li class="active">Week 5: Linear Regression & Optimization</li>
+                                        <li>Week 6: Neural Network Math from scratch</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Students Choose Luma Section -->
+        <section class="features-section" id="features">
+            <div class="section-container">
+                <div class="features-header">
+                    <span class="section-tag">Why Luma</span>
+                    <h2 class="section-title">Why Students Choose Luma</h2>
+                    <p class="section-subtitle">Unlock an ecosystem built for personalized growth, curated knowledge, and collaborative learning.</p>
+                </div>
+                
+                <div class="features-grid">
+                    <!-- Card 1 -->
+                    <div class="feature-card" id="feature-assessment">
+                        <div class="feature-icon-wrapper brain">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1 0-3.12 3 3 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.12A2.5 2.5 0 0 1 9.5 2Z"></path>
+                                <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 0-3.12 3 3 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.12A2.5 2.5 0 0 0 14.5 2Z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">AI Discovery Assessment</h3>
+                        <p class="feature-card-description">Discover your personality and strengths.</p>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="feature-card" id="feature-recommendations">
+                        <div class="feature-icon-wrapper sparkles">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">AI Recommendations</h3>
+                        <p class="feature-card-description">Receive personalized career suggestions.</p>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="feature-card" id="feature-learning">
+                        <div class="feature-icon-wrapper book">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">Learning Hub</h3>
+                        <p class="feature-card-description">Structured learning with free resources.</p>
+                    </div>
+
+                    <!-- Card 4 -->
+                    <div class="feature-card" id="feature-journey">
+                        <div class="feature-icon-wrapper roadmap">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">Journey</h3>
+                        <p class="feature-card-description">Track your roadmap and weekly goals.</p>
+                    </div>
+
+                    <!-- Card 5 -->
+                    <div class="feature-card" id="feature-explorer">
+                        <div class="feature-icon-wrapper community">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">Explorer Hub</h3>
+                        <p class="feature-card-description">Join communities and collaborate.</p>
+                    </div>
+
+                    <!-- Card 6 -->
+                    <div class="feature-card" id="feature-summary">
+                        <div class="feature-icon-wrapper analytics">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line>
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">Summary</h3>
+                        <p class="feature-card-description">Visualize your learning progress.</p>
+                    </div>
+                </div>
+            </div>
+        </section>        <!-- How Luma Works Section -->
+        <section class="how-it-works-section" id="how-it-works">
+            <div class="section-container">
+                <div class="how-header">
+                    <span class="section-tag">Methodology</span>
+                    <h2 class="section-title">How Luma Works</h2>
+                    <p class="section-subtitle">A seamless journey structured to facilitate exploration and direct personal development.</p>
+                </div>
+                
+                <div class="timeline-container">
+                    <!-- SVG Curved Connector Line (Visible on Desktop) -->
+                    <svg class="timeline-svg-connector" viewBox="0 0 1000 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 83 60 C 150 10, 200 10, 250 60 C 300 110, 360 110, 417 60 C 470 10, 530 10, 583 60 C 630 110, 700 110, 750 60 C 800 10, 870 10, 917 60" stroke="#DEAFC2" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 6" />
+                    </svg>
+
+                    <div class="timeline-steps">
+                        <!-- Step 1 -->
+                        <div class="timeline-step">
+                            <div class="step-card-pastel pastel-step-1">
+                                <div class="step-dot-wrapper icon-step-discover">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                                </div>
+                                <h3 class="step-title">Discover Yourself</h3>
+                                <p class="step-desc">Understand your interests, strengths, and passions.</p>
+                            </div>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="timeline-step">
+                            <div class="step-card-pastel pastel-step-2">
+                                <div class="step-dot-wrapper icon-step-ai">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1 0-3.12 3 3 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.12A2.5 2.5 0 0 1 9.5 2Z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 0-3.12 3 3 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.12A2.5 2.5 0 0 0 14.5 2Z"></path></svg>
+                                </div>
+                                <h3 class="step-title">AI Understands You</h3>
+                                <p class="step-desc">Our AI parses your strengths to recommend fields.</p>
+                            </div>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="timeline-step">
+                            <div class="step-card-pastel pastel-step-3">
+                                <div class="step-dot-wrapper icon-step-explore">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                </div>
+                                <h3 class="step-title">Explore Careers</h3>
+                                <p class="step-desc">Explore pathways through hands-on simulations.</p>
+                            </div>
+                        </div>
+                        <!-- Step 4 -->
+                        <div class="timeline-step">
+                            <div class="step-card-pastel pastel-step-4">
+                                <div class="step-dot-wrapper icon-step-learn">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                                </div>
+                                <h3 class="step-title">Learn</h3>
+                                <p class="step-desc">Build real-world knowledge with structured resources.</p>
+                            </div>
+                        </div>
+                        <!-- Step 5 -->
+                        <div class="timeline-step">
+                            <div class="step-card-pastel pastel-step-5">
+                                <div class="step-dot-wrapper icon-step-community">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                </div>
+                                <h3 class="step-title">Join Communities</h3>
+                                <p class="step-desc">Connect with peer explorers and share projects.</p>
+                            </div>
+                        </div>
+                        <!-- Step 6 -->
+                        <div class="timeline-step">
+                            <div class="step-card-pastel pastel-step-6">
+                                <div class="step-dot-wrapper icon-step-grow">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                                </div>
+                                <h3 class="step-title">Grow</h3>
+                                <p class="step-desc">Shape your future with true personal clarity.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quote Section -->
+        <section class="philosophy-section" id="about">
+            <div class="philosophy-banner">
+                <div class="banner-stars" aria-hidden="true">
+                    <div class="banner-star banner-star-1"></div>
+                    <div class="banner-star banner-star-2"></div>
+                    <div class="banner-star banner-star-3"></div>
+                    <div class="banner-star banner-star-4"></div>
+                </div>
+                <blockquote class="philosophy-quote">
+                    "It's All About Exploration,<br>Not Perfection."
+                </blockquote>
+                <p class="philosophy-subtext">
+                    We believe every student deserves the opportunity to discover themselves before deciding their future.
+                </p>
+                <div class="philosophy-planet-deco">
+                    <!-- Planet SVG deco -->
+                    <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="planetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#D480BB" />
+                                <stop offset="100%" stop-color="#A775C9" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="30" fill="url(#planetGrad)" />
+                        <!-- Planet ring -->
+                        <path d="M10,60 C30,45 70,45 90,60" stroke="#DEAFC2" stroke-width="4" fill="none" />
+                        <path d="M15,63 C33,48 67,48 85,63" stroke="#EAF7EC" stroke-width="1.5" fill="none" stroke-dasharray="4 2" />
+                    </svg>
+                </div>
+            </div>
+        </section>        <!-- Final Call to Action -->
+        <section class="cta-section" id="community">
+            <div class="cta-card">
+                <div class="cta-glow"></div>
+                <h2 class="cta-title">Ready to Begin Your Journey?</h2>
+                <p class="cta-paragraph">
+                    Explore your interests.<br>
+                    Build confidence.<br>
+                    Shape your future.
+                </p>
+                <div class="cta-actions">
+                    <a href="#assessment-preview" class="btn btn-solid btn-large" id="cta-primary-btn">Start Exploring</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand-column">
+                <a href="#home" class="footer-logo">
+                    <svg class="logo-icon" width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <mask id="logoLMaskFooter">
+                            <rect width="100" height="100" fill="white" />
+                            <path d="M 44,28 H 52 V 58 H 68 V 66 H 44 Z" fill="black" />
+                        </mask>
+                        <path d="M 50,5 C 50,30 30,50 5,50 C 30,50 50,70 50,95 C 50,70 70,50 95,50 C 70,50 50,30 50,5 Z" fill="url(#logoGrad)" mask="url(#logoLMaskFooter)" />
+                        <path d="M 42,20 C 29,20 20,29 20,42" stroke="#D480BB" stroke-width="3" stroke-linecap="round" fill="none" />
+                        <path d="M 58,80 C 71,80 80,71 80,58" stroke="#A775C9" stroke-width="3" stroke-linecap="round" fill="none" />
+                        <path d="M 78,19 C 78,22 75,25 72,25 C 75,25 78,28 78,31 C 78,28 81,25 84,25 C 81,25 78,22 78,19 Z" fill="#A775C9" />
+                        <path d="M 22,69 C 22,72 19,75 16,75 C 19,75 22,78 22,81 C 22,78 25,75 28,75 C 25,75 22,72 22,69 Z" fill="#D480BB" />
+                    </svg>
+                    <span class="logo-text">Luma</span>
+                </a>
+                <p class="footer-tagline">Explore. Learn. Reflect. Grow.<br>Because your future is built one experience at a time.</p>
+                
+                <!-- Social media icons -->
+                <div class="social-links-wrapper">
+                    <!-- Instagram -->
+                    <a href="#instagram" class="social-link" aria-label="Instagram">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    </a>
+                    <!-- LinkedIn -->
+                    <a href="#linkedin" class="social-link" aria-label="LinkedIn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                    </a>
+                    <!-- GitHub -->
+                    <a href="#github" class="social-link" aria-label="GitHub">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-columns-wrapper">
+                <!-- About -->
+                <div class="footer-column">
+                    <h4 class="footer-title">About</h4>
+                    <ul class="footer-links">
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#about">Careers</a></li>
+                        <li><a href="#about">Blog</a></li>
+                        <li><a href="#about">Contact Us</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Resources -->
+                <div class="footer-column">
+                    <h4 class="footer-title">Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#updates">Updates</a></li>
+                    </ul>
+                </div>
+
+                <!-- Community -->
+                <div class="footer-column">
+                    <h4 class="footer-title">Community</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Explorer Hub</a></li>
+                        <li><a href="#features">Challenges</a></li>
+                        <li><a href="#community">Leaderboards</a></li>
+                        <li><a href="#community">Events</a></li>
+                    </ul>
+                </div>
+
+                <!-- Support -->
+                <div class="footer-column">
+                    <h4 class="footer-title">Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Help Center</a></li>
+                        <li><a href="#how-it-works">Privacy Policy</a></li>
+                        <li><a href="#how-it-works">Terms of Service</a></li>
+                        <li><a href="#how-it-works">FAQs</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p class="copyright">&copy; 2026 Luma. All rights reserved.</p>
+            <p class="footer-bottom-philosophy">Discover Yourself Before Deciding Your Future.</p>
+        </div>
+    </footer>
+
+    <!-- Main JS -->
+    <script src="supabase-features.js"></script>
+    <script src="p0-features.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

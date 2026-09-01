@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luma Challenge</title>
+    <meta name="description" content="Complete a practical Luma career challenge and add it to your learning progress.">
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="supabase-features.js"></script>
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-container"><a href="dashboard.html" class="logo-wrapper" data-testid="challenge-logo-link"><span class="logo-text">Luma</span></a><div class="nav-links"><a href="journey.html">My Journey</a><a href="learning.html">Learning Hub</a><a href="explorer.html">Explorer</a><a href="profile.html">Profile</a></div></div></nav>
+    <main class="container p0-page-shell">
+        <a href="journey.html" class="p0-back-link" data-testid="challenge-back-link">← Back to My Journey</a>
+        <section class="p0-hero-card" data-testid="challenge-card">
+            <div>
+                <span class="course-card-tag">Weekly Challenge</span>
+                <h1 id="challenge-title" data-testid="challenge-title">Loading challenge…</h1>
+                <p id="challenge-description" data-testid="challenge-description"></p>
+            </div>
+            <div class="challenge-badge-row"><span id="challenge-difficulty" class="challenge-badge" data-testid="challenge-difficulty"></span><span id="challenge-duration" class="challenge-badge time" data-testid="challenge-duration"></span></div>
+        </section>
+        <div class="p0-two-column">
+            <section class="dash-premium-card">
+                <h2>What to do</h2>
+                <p id="challenge-instructions" data-testid="challenge-instructions"></p>
+                <div class="p0-highlight"><strong>Reward</strong><span id="challenge-reward" data-testid="challenge-reward"></span></div>
+            </section>
+            <section class="dash-premium-card">
+                <h2>Submit your reflection</h2>
+                <form id="challenge-submit-form" class="discovery-form">
+                    <label for="challenge-reflection">What did you learn?</label>
+                    <textarea id="challenge-reflection" minlength="10" maxlength="2000" rows="6" required data-testid="challenge-reflection-input"></textarea>
+                    <label for="challenge-submission-url">Project or evidence link (optional)</label>
+                    <input id="challenge-submission-url" type="url" placeholder="https://" data-testid="challenge-submission-url-input">
+                    <button type="submit" class="btn btn-solid btn-full" data-testid="challenge-complete-button" disabled>Loading Challenge…</button>
+                    <p id="challenge-submit-status" data-testid="challenge-submit-status"></p>
+                </form>
+            </section>
+        </div>
+    </main>
+    <script src="p0-features.js"></script>
+    <script src="p0-ui.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

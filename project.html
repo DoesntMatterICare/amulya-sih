@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luma Student Project</title>
+    <meta name="description" content="View a project shared by a Luma learner.">
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="supabase-features.js"></script>
+</head>
+<body>
+    <nav class="navbar"><div class="container nav-container"><a href="index.html" class="logo-wrapper" data-testid="project-logo-link"><span class="logo-text">Luma</span></a><div class="nav-links"><a href="learning.html">Learning Hub</a><a href="explorer.html">Explorer</a><a href="profile.html">Profile</a></div></div></nav>
+    <main class="container p0-page-shell">
+        <a href="explorer.html#featured-projects-section" class="p0-back-link" data-testid="project-back-link">← Back to Featured Projects</a>
+        <article class="p0-project-detail" id="project-detail" data-testid="project-detail">
+            <div id="project-detail-media" class="p0-project-media" data-testid="project-detail-media"><span>Student Project</span></div>
+            <div class="p0-project-copy">
+                <span id="project-detail-career" class="course-card-tag" data-testid="project-detail-career"></span>
+                <h1 id="project-detail-title" data-testid="project-detail-title">Loading project…</h1>
+                <a id="project-detail-author" class="project-creator-name" data-testid="project-detail-author"></a>
+                <p id="project-detail-description" data-testid="project-detail-description"></p>
+                <div id="project-detail-skills" class="p0-chip-row" data-testid="project-detail-skills"></div>
+                <div class="p0-action-row">
+                    <a id="project-detail-link" class="btn btn-solid" target="_blank" rel="noopener noreferrer" data-testid="project-detail-link">Open Project</a>
+                    <button id="project-detail-share" class="btn btn-outline" data-testid="project-detail-share-button">Copy Link</button>
+                    <button id="project-detail-delete" class="btn btn-outline" hidden data-testid="project-detail-delete-button">Delete</button>
+                </div>
+                <p id="project-detail-status" data-testid="project-detail-status"></p>
+            </div>
+        </article>
+    </main>
+    <script src="p0-features.js"></script>
+    <script src="p0-ui.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
