@@ -3259,6 +3259,163 @@ ul {
     transform: translateX(-4px);
 }
 
+.concept-theory,
+.concept-external-resources {
+    background-color: var(--color-white);
+    border: 1px solid var(--color-neutral);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    padding: 1.75rem;
+}
+
+.concept-theory {
+    margin-bottom: 1.25rem;
+}
+
+.concept-theory h2,
+.concept-external-resources h2 {
+    color: var(--color-text-heading);
+    font-family: var(--font-heading-1);
+    font-size: 1.75rem;
+    margin: 0;
+}
+
+.concept-theory h3 {
+    color: var(--color-text-heading);
+    font-family: var(--font-heading-2);
+    font-size: 1.2rem;
+    margin: 1.75rem 0 0.9rem;
+}
+
+.concept-theory-introduction,
+.concept-theory-mindset,
+.concept-external-resources > p {
+    color: var(--color-text-body);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    margin: 0.9rem 0 0;
+    max-width: 72ch;
+}
+
+.concept-theory-mindset {
+    background: linear-gradient(135deg, rgba(167, 117, 201, 0.07), rgba(212, 128, 187, 0.07));
+    border-radius: var(--radius-sm);
+    color: var(--color-text-heading);
+    font-weight: 600;
+    padding: 0.9rem 1rem;
+}
+
+.design-thinking-phases {
+    display: grid;
+    gap: 0.7rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.design-thinking-phases li {
+    align-items: flex-start;
+    background-color: #FDFCFE;
+    border: 1px solid rgba(167, 117, 201, 0.16);
+    border-radius: var(--radius-sm);
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 0.9rem 1rem;
+}
+
+.design-thinking-phase-number {
+    color: var(--color-primary);
+    font-family: var(--font-heading-2);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.design-thinking-phases h4 {
+    color: var(--color-text-heading);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.design-thinking-phases p {
+    color: var(--color-text-body);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0.25rem 0 0;
+}
+
+.concept-external-resources {
+    margin-bottom: 1.25rem;
+}
+
+.concept-external-resource-list {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 1.25rem;
+}
+
+.concept-external-resource {
+    background: linear-gradient(135deg, rgba(167, 117, 201, 0.05), rgba(212, 128, 187, 0.05));
+    border: 1px solid rgba(167, 117, 201, 0.2);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-heading);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+    padding: 1rem;
+    text-decoration: none;
+    transition: var(--transition-smooth);
+}
+
+.concept-external-resource:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
+}
+
+.concept-external-resource:focus-visible {
+    outline: 3px solid rgba(167, 117, 201, 0.42);
+    outline-offset: 3px;
+}
+
+.concept-external-resource-label,
+.concept-external-resource-action {
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.concept-external-resource > strong {
+    font-size: 1rem;
+}
+
+.concept-external-resource > span:not(.concept-external-resource-label):not(.concept-external-resource-action) {
+    color: var(--color-text-body);
+    font-size: 0.87rem;
+    line-height: 1.45;
+}
+
+.concept-external-resource-action {
+    margin-top: auto;
+    padding-top: 0.4rem;
+}
+
+@media (max-width: 640px) {
+    .concept-theory,
+    .concept-external-resources {
+        padding: 1.25rem;
+    }
+
+    .concept-external-resource-list {
+        grid-template-columns: 1fr;
+    }
+}
+
 .resource-cards-stack {
     display: flex;
     flex-direction: column;
@@ -4129,7 +4286,6 @@ ul {
 @keyframes btn-spin-loader {
     to { transform: rotate(360deg); }
 }
-
 
 
 
