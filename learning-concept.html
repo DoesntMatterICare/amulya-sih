@@ -119,6 +119,10 @@
         <div class="dash-layout-grid">
             <!-- LEFT MAIN CONTENT COLUMN -->
             <div class="dash-column-left">
+
+                <section id="concept-theory" class="concept-theory" aria-labelledby="concept-theory-title" hidden data-testid="concept-theory"></section>
+
+                <section id="concept-external-resources" class="concept-external-resources" aria-labelledby="concept-external-resources-title" hidden data-testid="concept-external-resources"></section>
                 
                 <!-- Concept Resources Stack Card -->
                 <div class="dash-premium-card" style="gap: 1.5rem;">
@@ -197,6 +201,21 @@
                     matters: 'Design Thinking teaches you how to break down complex, ambiguous business problems by focusing on real human obstacles.',
                     skills: ['Problem Framing', 'Ideation', 'Empathy Mapping', 'Testing Iterations'],
                     tip: 'Spend time studying the Empathy mapping phase. It serves as the foundation for the entire framework.',
+                    theory: {
+                        introduction: 'Design thinking is a human-centered way to solve problems. Instead of beginning with a solution, you begin by understanding the people affected by the problem, then learn through small experiments. It is especially useful when a challenge is unclear, people have different needs, or the first answer is unlikely to be the best one.',
+                        mindset: 'The process is not a straight line. Teams move back and forth between exploring possibilities and narrowing their focus as they learn.',
+                        phases: [
+                            { title: 'Empathize', text: 'Observe and speak with people to understand their goals, context, frustrations, and workarounds.' },
+                            { title: 'Define', text: 'Turn research into a focused point of view or problem statement that describes a meaningful need.' },
+                            { title: 'Ideate', text: 'Generate many possible approaches before judging them, so the team can move beyond the first obvious answer.' },
+                            { title: 'Prototype', text: 'Make a simple, inexpensive version of the idea, such as a sketch, storyboard, paper model, or clickable screen.' },
+                            { title: 'Test', text: 'Let people try the prototype, notice what works or confuses them, and use that feedback to improve the next version.' }
+                        ]
+                    },
+                    externalResources: [
+                        { label: 'Course link', title: 'OpenLearn: Design Thinking', description: 'A free, self-paced course from The Open University that introduces creative problem solving and design-thinking practice.', href: 'https://www.open.edu/openlearn/science-maths-technology/design-innovation/design-thinking/content-section-0/' },
+                        { label: 'YouTube link', title: 'IDEO U: What is Design Thinking?', description: 'A concise introduction to design thinking from IDEO U.', href: 'https://www.youtube.com/watch?v=ldYzbV0NDp8' }
+                    ],
                     resources: [
                         { id: 'design-thinking-guide', type: 'guide', title: 'Guide: The 5 Phases of Design Thinking', desc: 'Interactive slide presentation explaining Empathize to Test.', dur: '8 mins', minutes: 8 },
                         { id: 'design-thinking-brainstorm', type: 'read', title: 'Article: Brainstorming without Constraints', desc: 'Learn how to generate 50+ divergent ideas during brainstorming.', dur: '7 mins', minutes: 7 }
@@ -268,6 +287,76 @@
             document.getElementById('concept-desc').textContent = data.desc;
             document.getElementById('concept-matters-text').textContent = data.matters;
             document.getElementById('concept-ai-tip').textContent = `"${data.tip}"`;
+            document.title = `${data.title} | Luma`;
+
+            const theorySection = document.getElementById('concept-theory');
+            const externalResourcesSection = document.getElementById('concept-external-resources');
+            theorySection.replaceChildren();
+            externalResourcesSection.replaceChildren();
+
+            if (data.theory) {
+                theorySection.hidden = false;
+                const heading = document.createElement('h2');
+                heading.id = 'concept-theory-title';
+                heading.textContent = 'The theory behind design thinking';
+                const introduction = document.createElement('p');
+                introduction.className = 'concept-theory-introduction';
+                introduction.textContent = data.theory.introduction;
+                const mindset = document.createElement('p');
+                mindset.className = 'concept-theory-mindset';
+                mindset.textContent = data.theory.mindset;
+                const phaseHeading = document.createElement('h3');
+                phaseHeading.textContent = 'The five phases';
+                const phases = document.createElement('ol');
+                phases.className = 'design-thinking-phases';
+                data.theory.phases.forEach((phase, index) => {
+                    const item = document.createElement('li');
+                    const number = document.createElement('span');
+                    number.className = 'design-thinking-phase-number';
+                    number.textContent = String(index + 1).padStart(2, '0');
+                    const content = document.createElement('div');
+                    const phaseTitle = document.createElement('h4');
+                    phaseTitle.textContent = phase.title;
+                    const phaseText = document.createElement('p');
+                    phaseText.textContent = phase.text;
+                    content.append(phaseTitle, phaseText);
+                    item.append(number, content);
+                    phases.appendChild(item);
+                });
+                theorySection.append(heading, introduction, mindset, phaseHeading, phases);
+            }
+
+            if (data.externalResources?.length) {
+                externalResourcesSection.hidden = false;
+                const heading = document.createElement('h2');
+                heading.id = 'concept-external-resources-title';
+                heading.textContent = 'Keep learning';
+                const description = document.createElement('p');
+                description.textContent = 'Use these trusted resources to go deeper after this lesson.';
+                const links = document.createElement('div');
+                links.className = 'concept-external-resource-list';
+                data.externalResources.forEach((resource) => {
+                    const link = document.createElement('a');
+                    link.className = 'concept-external-resource';
+                    link.href = resource.href;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.dataset.testid = `design-thinking-${resource.label.toLowerCase().replace(/\s+/g, '-')}`;
+                    const label = document.createElement('span');
+                    label.className = 'concept-external-resource-label';
+                    label.textContent = resource.label;
+                    const title = document.createElement('strong');
+                    title.textContent = resource.title;
+                    const resourceDescription = document.createElement('span');
+                    resourceDescription.textContent = resource.description;
+                    const action = document.createElement('span');
+                    action.className = 'concept-external-resource-action';
+                    action.textContent = 'Open resource ↗';
+                    link.append(label, title, resourceDescription, action);
+                    links.appendChild(link);
+                });
+                externalResourcesSection.append(heading, description, links);
+            }
 
             // Render chips
             const skillsContainer = document.getElementById('concept-skills-container');
