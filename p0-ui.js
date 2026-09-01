@@ -163,6 +163,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    const learningConcepts = [
+        { id: 'design-thinking', title: 'Design Thinking', description: 'Learn user-centered frameworks to define problems and ideate creative solutions.' },
+        { id: 'user-research', title: 'User Research', description: 'Master user interviews, personas, and behavioral studies to understand your audience.' },
+        { id: 'wireframing', title: 'Wireframing', description: 'Translate abstract ideas into skeletal UI layouts and screen blueprints.' },
+        { id: 'information-architecture', title: 'Information Architecture', description: 'Structure, label, and organize content menus logically so users find answers instantly.' },
+        { id: 'visual-design', title: 'Visual Design', description: 'Apply grids, alignment, responsive color hierarchy, and typography layout systems.' },
+        { id: 'prototyping', title: 'Prototyping', description: 'Create high-fidelity interactive flow connections and test realistic usage.' }
+    ];
+
+    const renderLearningConcepts = (holder, resources = []) => {
+        if (!holder) return;
+        const concepts = learningConcepts.map((concept) => {
+            const conceptResources = resources.filter((resource) => resource.concept === concept.id);
+            return {
+                ...concept,
+                minutes: conceptResources.reduce((total, resource) => total + Number(resource.minutes || 0), 0),
+                completed: conceptResources.length > 0 && conceptResources.every((resource) => resource.completed)
+            };
+        });
+        const currentIndex = concepts.findIndex((concept) => !concept.completed);
+        holder.replaceChildren();
+        concepts.forEach((concept, index) => {
+            const state = concept.completed ? 'completed' : index === currentIndex ? 'current' : 'locked';
+            const row = document.createElement('a');
+            row.className = 'concept-node-row';
+            row.href = `learning-concept.html?concept=${encodeURIComponent(concept.id)}`;
+            row.dataset.testid = `learning-concept-${concept.id}`;
+            const status = document.createElement('div');
+            status.className = `concept-node-status ${state}`;
+            if (state === 'completed') status.textContent = '✓';
+            if (state === 'locked') status.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
+            const card = document.createElement('div');
+            card.className = `concept-node-card${state === 'current' ? ' current' : ''}`;
+            const left = document.createElement('div'); left.className = 'concept-node-left';
+            const title = document.createElement('h4'); title.className = 'concept-node-title'; title.textContent = concept.title;
+            const desc = document.createElement('p'); desc.className = 'concept-node-desc'; desc.textContent = concept.description;
+            const right = document.createElement('div'); right.className = 'concept-node-right';
+            const duration = document.createElement('span'); duration.className = 'concept-node-duration'; duration.textContent = `${concept.minutes || 0} mins`;
+            const badge = document.createElement('span'); badge.className = `concept-node-badge ${state}`; badge.textContent = state === 'completed' ? 'Completed' : state === 'current' ? 'Current' : 'Locked';
+            left.append(title, desc); right.append(duration, badge); card.append(left, right); row.append(status, card); holder.appendChild(row);
+        });
+    };
+
     const initLearning = async () => {
         if (!byId('learning-real-concepts')) return;
         const snapshot = await window.LumaData.loadDashboardSnapshot();
@@ -170,18 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setText('learning-roadmap-caption', `${snapshot.completedResources} of ${snapshot.resources.length} resources complete`);
         setText('learning-roadmap-title', `${snapshot.profile.active_career_name || 'Career'} Roadmap`);
         setText('learning-roadmap-description', `${snapshot.completedDays} of ${snapshot.roadmap?.roadmap_days?.length || 7} roadmap days are complete.`);
-        const holder = byId('learning-real-concepts'); holder.replaceChildren();
-        snapshot.resources.slice(0, 6).forEach((resource, index) => {
-            const row = document.createElement('a'); row.className = 'concept-node-row'; row.href = `learning-concept.html?concept=${encodeURIComponent(resource.concept)}`;
-            row.dataset.testid = `learning-concept-${resource.id}`;
-            const status = document.createElement('div'); status.className = `concept-node-status ${resource.completed ? 'completed' : index === 0 ? 'current' : 'upcoming'}`; status.textContent = resource.completed ? '✓' : '';
-            const card = document.createElement('div'); card.className = 'concept-node-card';
-            const left = document.createElement('div'); left.className = 'concept-node-left';
-            const title = document.createElement('h4'); title.className = 'concept-node-title'; title.textContent = resource.title;
-            const desc = document.createElement('p'); desc.className = 'concept-node-desc'; desc.textContent = resource.description;
-            const right = document.createElement('div'); right.className = 'concept-node-right'; right.textContent = `${resource.minutes} mins`;
-            left.append(title, desc); card.append(left, right); row.append(status, card); holder.appendChild(row);
-        });
+        renderLearningConcepts(byId('learning-real-concepts'), snapshot.resources);
         renderPlan(byId('learning-weekly-goals'), snapshot.roadmap?.roadmap_days || []);
         const suggestion = await window.LumaData.loadPersonalizedSuggestion(snapshot);
         setText('learning-ai-suggestion', suggestion.suggestion);
@@ -354,4 +386,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Luma P0 feature initialization failed', error);
     }
+
+    window.addEventListener('luma:resource-completed', () => {
+        if (page === 'learning.html') {
+            initLearning().catch((error) => console.warn('Learning progress could not be refreshed', error));
+        }
+    });
 });

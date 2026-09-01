@@ -54,9 +54,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 complete.textContent = 'Completed ✓';
                 window.dispatchEvent(new CustomEvent('luma:resource-completed', { detail: resource }));
             } catch (error) {
-                complete.disabled = false;
-                complete.textContent = 'Try Again';
-                status.textContent = error.message || 'Sign in to save your completion.';
+                if (typeof window.completeLearningResource !== 'function') {
+                    complete.disabled = false;
+                    complete.textContent = 'Try Again';
+                    status.textContent = error.message || 'Progress could not be saved.';
+                    return;
+                }
+                window.completeLearningResource(resource.id, resource.title, Number(resource.minutes || 0), resource.concept);
+                complete.classList.add('completed');
+                complete.textContent = 'Completed ✓';
+                status.textContent = 'Saved on this device.';
             }
         });
         actions.append(explore, complete);

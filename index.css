@@ -3177,6 +3177,15 @@ ul {
     transition: var(--transition-smooth);
 }
 
+.concept-node-card.current {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 15px rgba(167, 117, 201, 0.1);
+}
+
+.concept-node-card.current .concept-node-title {
+    color: var(--color-primary);
+}
+
 .concept-node-row:hover .concept-node-card {
     border-color: var(--color-primary);
     box-shadow: var(--shadow-hover);
@@ -4286,7 +4295,6 @@ ul {
 @keyframes btn-spin-loader {
     to { transform: rotate(360deg); }
 }
-
 
 
 

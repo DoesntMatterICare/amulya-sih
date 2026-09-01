@@ -50,12 +50,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 button.textContent = 'Saving…';
                 try {
                     await window.LumaData.completeResource(resource.id);
+                    window.dispatchEvent(new CustomEvent('luma:resource-completed', { detail: resource }));
                     button.classList.add('completed');
                     button.textContent = 'Completed ✓';
                 } catch (error) {
-                    button.disabled = false;
-                    button.textContent = 'Try Again';
-                    button.title = error.message || 'Sign in to save your completion.';
+                    if (typeof window.completeLearningResource !== 'function') {
+                        button.disabled = false;
+                        button.textContent = 'Try Again';
+                        button.title = error.message || 'Progress could not be saved.';
+                        return;
+                    }
+                    window.completeLearningResource(resource.id, resource.title, Number(resource.minutes || 0), resource.concept);
+                    button.classList.add('completed');
+                    button.textContent = 'Completed ✓';
+                    button.title = 'Saved on this device.';
                 }
             });
             action.append(duration, button);

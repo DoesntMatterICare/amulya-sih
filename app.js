@@ -734,6 +734,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         return defaultResourceLibrary;
     };
 
+    const updateLearningConceptTimeline = (state = getProgressState()) => {
+        const holder = document.getElementById('learning-real-concepts');
+        if (!holder) return;
+        const resources = getResourceLibrary();
+        const conceptOrder = ['design-thinking', 'user-research', 'wireframing', 'information-architecture', 'visual-design', 'prototyping'];
+        const concepts = conceptOrder.map((concept) => {
+            const conceptResources = resources.filter((resource) => resource.concept === concept);
+            return {
+                resources: conceptResources,
+                completed: conceptResources.length > 0 && conceptResources.every((resource) => state.completedResourceIds.includes(resource.id)),
+                minutes: conceptResources.reduce((total, resource) => total + Number(resource.minutes || 0), 0)
+            };
+        });
+        const currentIndex = concepts.findIndex((concept) => !concept.completed);
+        const rows = [...holder.querySelectorAll('.concept-node-row')];
+        rows.forEach((row, index) => {
+            const concept = concepts[index];
+            if (!concept) return;
+            const statusName = concept.completed ? 'completed' : index === currentIndex ? 'current' : 'locked';
+            const status = row.querySelector('.concept-node-status');
+            const card = row.querySelector('.concept-node-card');
+            const title = row.querySelector('.concept-node-title');
+            const duration = row.querySelector('.concept-node-duration');
+            const badge = row.querySelector('.concept-node-badge');
+            if (status) {
+                status.className = `concept-node-status ${statusName}`;
+                status.replaceChildren();
+                if (statusName === 'completed') status.textContent = '✓';
+                if (statusName === 'locked') status.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
+            }
+            if (card) {
+                card.classList.toggle('current', statusName === 'current');
+                card.style.borderColor = statusName === 'current' ? 'var(--color-primary)' : '';
+                card.style.boxShadow = statusName === 'current' ? '0 4px 15px rgba(167, 117, 201, 0.1)' : '';
+            }
+            if (title) title.style.color = statusName === 'current' ? 'var(--color-primary)' : '';
+            if (duration) duration.textContent = `${concept.minutes} mins`;
+            if (badge) {
+                badge.className = `concept-node-badge ${statusName}`;
+                badge.textContent = statusName === 'completed' ? 'Completed' : statusName === 'current' ? 'Current' : 'Locked';
+            }
+        });
+    };
+
     const formatMinutes = (minutes) => {
         if (!minutes || minutes <= 0) return '0 minutes';
         const hours = Math.floor(minutes / 60);
@@ -1002,6 +1046,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : 'Your journey starts today. Complete your first lesson to begin tracking your progress.';
         }
 
+        updateLearningConceptTimeline(state);
         syncWeeklyChecklist(state);
     };
 
@@ -1028,6 +1073,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             saveProgressState(state);
             updateProgressUI(state);
+            window.dispatchEvent(new CustomEvent('luma:resource-completed', {
+                detail: { resourceId, title, minutes, concept }
+            }));
         }
     };
 
@@ -1045,6 +1093,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const initializeProgressTracking = () => {
         updateProgressUI(getProgressState());
+
+        window.addEventListener('luma:resource-completed', () => {
+            updateProgressUI(getProgressState());
+        });
 
         const checklistItems = document.querySelectorAll('#dash-plan-checklist .plan-checkbox-item');
         checklistItems.forEach((item) => {
