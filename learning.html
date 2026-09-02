@@ -136,7 +136,7 @@
                             <p class="course-card-week" id="learning-roadmap-description" data-testid="learning-roadmap-description" style="margin-top: -0.5rem;">Resources and challenges matched to your progress.</p>
                             
                             <div style="margin-top: 0.75rem;">
-                                <a href="learning-concept.html?concept=user-research" class="btn btn-solid" style="display: inline-block; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; text-decoration: none; text-align: center; box-shadow: var(--shadow-button);">Continue Learning</a>
+                                <a href="learning-concept.html?concept=user-research" data-career-next-link class="btn btn-solid" style="display: inline-block; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; text-decoration: none; text-align: center; box-shadow: var(--shadow-button);">Continue Learning</a>
                             </div>
                         </div>
                         
@@ -283,15 +283,15 @@
                 <div class="dash-premium-card" style="background-color: var(--color-white);">
                     <span class="card-header-title">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                        Why User Research Matters
+                        <span id="learning-why-title">Why User Research Matters</span>
                     </span>
-                    <p style="font-size: 0.95rem; line-height: 1.5; color: var(--color-text-body); font-family: 'Inter', sans-serif;">
+                    <p id="learning-why-text" style="font-size: 0.95rem; line-height: 1.5; color: var(--color-text-body); font-family: 'Inter', sans-serif;">
                         This concept helps you understand how users think before creating interfaces. Research prevents designing based on personal bias.
                     </p>
                     
                     <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
                         <span style="font-size: 0.85rem; font-weight: 700; color: var(--color-text-heading);">Skills You'll Gain:</span>
-                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                        <div id="learning-skills-list" style="display: flex; flex-wrap: wrap; gap: 6px;">
                             <span class="challenge-badge" style="background-color: rgba(167, 117, 201, 0.05); color: var(--color-primary); border-color: rgba(167, 117, 201, 0.15);">Empathy</span>
                             <span class="challenge-badge" style="background-color: rgba(212, 128, 187, 0.05); color: var(--color-secondary); border-color: rgba(212, 128, 187, 0.15);">Research</span>
                             <span class="challenge-badge" style="background-color: rgba(167, 117, 201, 0.05); color: var(--color-primary); border-color: rgba(167, 117, 201, 0.15);">Problem Solving</span>
@@ -379,11 +379,12 @@
 
         <!-- BOTTOM SECTION -->
         <footer style="margin-top: 4rem; display: flex; justify-content: center; padding-bottom: 2rem;">
-            <a href="learning-concept.html?concept=user-research" class="btn btn-solid" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; text-decoration: none; padding: 1.1rem 3rem; border-radius: 50px; font-weight: 700; font-size: 1.1rem; box-shadow: 0 10px 25px rgba(167, 117, 201, 0.25); text-align: center; transition: var(--transition-smooth); display: inline-block;">Continue Learning</a>
+            <a href="learning-concept.html?concept=user-research" data-career-next-link class="btn btn-solid" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; text-decoration: none; padding: 1.1rem 3rem; border-radius: 50px; font-weight: 700; font-size: 1.1rem; box-shadow: 0 10px 25px rgba(167, 117, 201, 0.25); text-align: center; transition: var(--transition-smooth); display: inline-block;">Continue Learning</a>
         </footer>
     </main>
 
     <!-- Main JS -->
+    <script src="career-experience.js"></script>
     <script src="learning-hub.js"></script>
     <script src="p0-features.js"></script>
     <script src="p0-ui.js"></script>

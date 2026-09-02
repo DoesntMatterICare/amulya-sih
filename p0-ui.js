@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const setText = (id, value) => { const node = byId(id); if (node) node.textContent = value ?? ''; };
     const formatMinutes = (minutes) => minutes >= 60 ? `${Math.round(minutes / 60 * 10) / 10} hours` : `${minutes} mins`;
     const formatDate = (value) => new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric' }).format(new Date(value));
+    const getCareerExperience = () => window.LumaCareerExperience?.getActive?.() || null;
+    const getCareerSnapshot = () => window.LumaCareerExperience?.buildSnapshot?.() || null;
     const copyText = async (value) => {
         try {
             await navigator.clipboard.writeText(value);
@@ -113,8 +115,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         days.slice(0, 7).forEach((day) => {
             const item = document.createElement('a');
             item.className = `plan-checkbox-item ${day.status === 'completed' ? 'checked' : ''}`;
-            item.href = day.roadmap_day_resources?.[0]?.learning_resources
-                ? `learning-concept.html?concept=${encodeURIComponent(day.roadmap_day_resources[0].learning_resources.concept)}` : 'journey.html';
+            const concept = day.concept || day.roadmap_day_resources?.[0]?.learning_resources?.concept;
+            item.href = concept ? `learning-concept.html?concept=${encodeURIComponent(concept)}` : 'journey.html';
             item.dataset.testid = `dashboard-roadmap-day-${day.day_number}`;
             const dot = document.createElement('span'); dot.className = 'checkbox-circle'; dot.textContent = day.status === 'completed' ? '✓' : String(day.day_number);
             const label = document.createElement('span'); label.textContent = day.title;
@@ -124,7 +126,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const initDashboard = async () => {
         if (!byId('dash-plan-checklist')) return;
-        const snapshot = await window.LumaData.loadDashboardSnapshot();
+        const experience = getCareerExperience();
+        let snapshot = getCareerSnapshot();
+        if (!snapshot) {
+            try {
+                snapshot = await window.LumaData.loadDashboardSnapshot();
+            } catch (error) {
+                setText('dash-active-career-title', experience?.title || 'Your Career Path');
+                setText('dash-primary-pill-val', experience?.title || 'Career Explorer');
+                setText('dash-roadmap-caption', 'Your learning plan will appear when it is available.');
+                setText('dash-challenge-title', 'Continue your learning journey');
+                setText('dash-challenge-difficulty', 'Self-paced');
+                setText('dash-challenge-duration', '15 mins');
+                const fallbackButton = byId('dash-start-challenge');
+                if (fallbackButton) {
+                    fallbackButton.textContent = 'Open Learning Hub';
+                    fallbackButton.disabled = false;
+                    fallbackButton.onclick = () => { window.location.href = 'learning.html'; };
+                }
+                setText('dash-reminder-text', 'Choose the next learning resource to keep moving forward.');
+                return;
+            }
+        }
         setText('dash-active-career-title', snapshot.profile.active_career_name || 'Your Career Path');
         setText('dash-primary-pill-val', snapshot.profile.active_career_name || 'Career Explorer');
         setText('dash-roadmap-caption', `${snapshot.completedDays} of ${snapshot.roadmap?.roadmap_days?.length || 7} roadmap days complete`);
@@ -134,24 +157,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         const circle = document.querySelector('.progress-circle-fill');
         if (circle) circle.style.strokeDashoffset = String(339.3 * (1 - snapshot.progressPercent / 100));
         renderPlan(byId('dash-plan-checklist'), snapshot.roadmap?.roadmap_days || []);
-        if (snapshot.challenge) {
-            setText('dash-challenge-title', snapshot.challenge.title);
-            setText('dash-challenge-difficulty', snapshot.challenge.difficulty);
-            setText('dash-challenge-duration', formatMinutes(snapshot.challenge.duration_minutes));
+        const challenge = experience?.isCustom ? experience.challenge : snapshot.challenge;
+        if (challenge) {
+            setText('dash-challenge-title', challenge.title);
+            setText('dash-challenge-difficulty', challenge.difficulty);
+            setText('dash-challenge-duration', formatMinutes(challenge.duration_minutes));
             const button = byId('dash-start-challenge');
             button.textContent = snapshot.challengeComplete ? 'Review Completed Challenge' : 'Start Challenge';
-            button.onclick = () => window.location.href = `challenge.html?id=${snapshot.challenge.id}`;
+            button.onclick = () => window.location.href = experience?.isCustom ? 'learning.html' : `challenge.html?id=${challenge.id}`;
+            button.disabled = false;
+        } else {
+            setText('dash-challenge-title', 'Choose your next learning resource');
+            setText('dash-challenge-difficulty', 'Self-paced');
+            setText('dash-challenge-duration', '15 mins');
+            const button = byId('dash-start-challenge');
+            button.textContent = 'Open Learning Hub';
+            button.onclick = () => { window.location.href = 'learning.html'; };
             button.disabled = false;
         }
-        const suggestion = await window.LumaData.loadPersonalizedSuggestion(snapshot);
-        setText('dash-reminder-text', suggestion.suggestion);
-        byId('dash-reminder-text').dataset.source = suggestion.source;
+        if (experience?.isCustom) {
+            setText('dash-reminder-text', experience.suggestion);
+            byId('dash-reminder-text').dataset.source = 'selected-career-path';
+        } else {
+            const suggestion = await window.LumaData.loadPersonalizedSuggestion(snapshot);
+            setText('dash-reminder-text', suggestion.suggestion);
+            byId('dash-reminder-text').dataset.source = suggestion.source;
+        }
         const activity = byId('dash-activity-timeline');
         if (activity) {
             activity.replaceChildren();
             const entries = [
                 ...snapshot.resources.filter((item) => item.completed).slice(0, 2).map((item) => `Completed ${item.title}`),
-                ...(snapshot.challengeComplete ? [`Completed ${snapshot.challenge.title}`] : []),
+                ...(snapshot.challengeComplete && challenge ? [`Completed ${challenge.title}`] : []),
                 ...snapshot.projects.slice(0, 1).map((item) => `Published ${item.title}`)
             ];
             (entries.length ? entries : ['Your first completed activity will appear here.']).forEach((text) => {
@@ -172,9 +209,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         { id: 'prototyping', title: 'Prototyping', description: 'Create high-fidelity interactive flow connections and test realistic usage.' }
     ];
 
-    const renderLearningConcepts = (holder, resources = []) => {
+    const renderLearningConcepts = (holder, resources = [], experience = null) => {
         if (!holder) return;
-        const concepts = learningConcepts.map((concept) => {
+        const baseConcepts = experience?.isCustom ? experience.concepts : learningConcepts;
+        const concepts = baseConcepts.map((concept) => {
             const conceptResources = resources.filter((resource) => resource.concept === concept.id);
             return {
                 ...concept,
@@ -189,6 +227,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const row = document.createElement('a');
             row.className = 'concept-node-row';
             row.href = `learning-concept.html?concept=${encodeURIComponent(concept.id)}`;
+            row.dataset.concept = concept.id;
+            row.dataset.locked = String(state === 'locked');
+            row.setAttribute('aria-disabled', String(state === 'locked'));
+            row.tabIndex = state === 'locked' ? -1 : 0;
             row.dataset.testid = `learning-concept-${concept.id}`;
             const status = document.createElement('div');
             status.className = `concept-node-status ${state}`;
@@ -208,21 +250,54 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const initLearning = async () => {
         if (!byId('learning-real-concepts')) return;
-        const snapshot = await window.LumaData.loadDashboardSnapshot();
+        const experience = getCareerExperience();
+        let snapshot = getCareerSnapshot();
+        if (!snapshot) {
+            try {
+                snapshot = await window.LumaData.loadDashboardSnapshot();
+            } catch (error) {
+                setText('learning-active-career', experience?.title || 'Career Explorer');
+                setText('learning-roadmap-caption', 'Your learning plan will appear when it is available.');
+                setText('learning-roadmap-title', `${experience?.title || 'Career'} Roadmap`);
+                setText('learning-roadmap-description', 'Choose a learning resource to begin your path.');
+                return;
+            }
+        }
         setText('learning-active-career', snapshot.profile.active_career_name || 'Career Explorer');
         setText('learning-roadmap-caption', `${snapshot.completedResources} of ${snapshot.resources.length} resources complete`);
         setText('learning-roadmap-title', `${snapshot.profile.active_career_name || 'Career'} Roadmap`);
         setText('learning-roadmap-description', `${snapshot.completedDays} of ${snapshot.roadmap?.roadmap_days?.length || 7} roadmap days are complete.`);
-        renderLearningConcepts(byId('learning-real-concepts'), snapshot.resources);
+        renderLearningConcepts(byId('learning-real-concepts'), snapshot.resources, experience);
         renderPlan(byId('learning-weekly-goals'), snapshot.roadmap?.roadmap_days || []);
-        const suggestion = await window.LumaData.loadPersonalizedSuggestion(snapshot);
-        setText('learning-ai-suggestion', suggestion.suggestion);
-        byId('learning-ai-suggestion').dataset.source = suggestion.source;
+        if (experience?.isCustom) {
+            setText('learning-ai-suggestion', experience.suggestion);
+            byId('learning-ai-suggestion').dataset.source = 'selected-career-path';
+            setText('learning-why-title', experience.why.title);
+            setText('learning-why-text', experience.why.text);
+            const skills = byId('learning-skills-list');
+            if (skills) {
+                skills.replaceChildren();
+                experience.why.skills.forEach((skill) => {
+                    const chip = document.createElement('span');
+                    chip.className = 'challenge-badge';
+                    chip.textContent = skill;
+                    skills.appendChild(chip);
+                });
+            }
+            document.querySelectorAll('[data-career-next-link]').forEach((link) => {
+                link.href = `learning-concept.html?concept=${encodeURIComponent(experience.concepts[0].id)}`;
+            });
+        } else {
+            const suggestion = await window.LumaData.loadPersonalizedSuggestion(snapshot);
+            setText('learning-ai-suggestion', suggestion.suggestion);
+            byId('learning-ai-suggestion').dataset.source = suggestion.source;
+        }
     };
 
     const initJourneyChallenge = async () => {
         if (!byId('weekly-challenge-container')) return;
-        const challenge = await window.LumaData.loadActiveChallenge();
+        const experience = getCareerExperience();
+        const challenge = experience?.isCustom ? experience.challenge : await window.LumaData.loadActiveChallenge();
         if (!challenge) return;
         setText('journey-challenge-title', challenge.title);
         setText('journey-challenge-description', challenge.description);
@@ -230,7 +305,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setText('journey-challenge-difficulty', challenge.difficulty);
         const button = byId('btn-mark-challenge');
         button.textContent = challenge.progress?.status === 'completed' ? 'Review Completed Challenge' : 'Open Challenge';
-        button.onclick = () => window.location.href = `challenge.html?id=${challenge.id}`;
+        button.onclick = () => window.location.href = experience?.isCustom ? 'learning.html' : `challenge.html?id=${challenge.id}`;
         button.disabled = false;
     };
 

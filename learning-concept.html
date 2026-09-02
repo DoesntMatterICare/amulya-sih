@@ -188,6 +188,7 @@
         </div>
     </main>
 
+    <script src="career-experience.js"></script>
     <!-- Content configuration script -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -202,6 +203,8 @@
                     skills: ['Problem Framing', 'Ideation', 'Empathy Mapping', 'Testing Iterations'],
                     tip: 'Spend time studying the Empathy mapping phase. It serves as the foundation for the entire framework.',
                     theory: {
+                        title: 'The theory behind design thinking',
+                        phaseTitle: 'The five phases',
                         introduction: 'Design thinking is a human-centered way to solve problems. Instead of beginning with a solution, you begin by understanding the people affected by the problem, then learn through small experiments. It is especially useful when a challenge is unclear, people have different needs, or the first answer is unlikely to be the best one.',
                         mindset: 'The process is not a straight line. Teams move back and forth between exploring possibilities and narrowing their focus as they learn.',
                         phases: [
@@ -227,6 +230,23 @@
                     matters: 'This concept helps you understand how users think before creating interfaces. Research prevents designing based on personal bias.',
                     skills: ['Empathy', 'Research', 'Problem Solving', 'Creativity', 'User Thinking'],
                     tip: 'Since you enjoyed Design Thinking, spend extra time on User Research before moving ahead.',
+                    theory: {
+                        title: 'The theory behind user research',
+                        phaseTitle: 'A practical research cycle',
+                        introduction: 'User research is the practice of learning about people before making product decisions. It replaces assumptions with evidence about users’ goals, behaviours, environments, and difficulties, helping a team solve the right problem instead of merely polishing the first solution it imagined.',
+                        mindset: 'Listen for patterns, not just requests. What people do, struggle with, and work around can be more useful than a single opinion about what they want.',
+                        phases: [
+                            { title: 'Plan the question', text: 'Choose a focused question, such as why a task fails or what people need before they can begin.' },
+                            { title: 'Find relevant participants', text: 'Speak with people who genuinely experience the situation you want to understand, not only people who are easy to reach.' },
+                            { title: 'Ask and observe', text: 'Use open questions and watch real behaviour. Avoid leading people toward the answer you expect.' },
+                            { title: 'Make sense of the evidence', text: 'Group notes into recurring themes, needs, pain points, and opportunities. Personas and journey maps can help reveal these patterns.' },
+                            { title: 'Share and act', text: 'Turn the findings into clear design decisions, then test whether the new solution improves the experience.' }
+                        ]
+                    },
+                    externalResources: [
+                        { label: 'Course link', title: 'Coursera: User Experience, Research & Prototyping', description: 'A University of California San Diego course covering design research, synthesis, ideation, and prototyping.', href: 'https://www.coursera.org/learn/user-research' },
+                        { label: 'YouTube link', title: 'NN/g: What Is User Research?', description: 'A short introduction to evidence-based user research from Nielsen Norman Group.', href: 'https://www.youtube.com/watch?v=0MLwuhpwRiE' }
+                    ],
                     resources: [
                         { id: 'user-research-interviews', type: 'guide', title: 'Guide: Conducting Effective User Interviews', desc: 'Preparation rules, bias avoidance, and recording scripts.', dur: '10 mins', minutes: 10 },
                         { id: 'user-research-personas', type: 'read', title: 'Article: Creating Realistic User Personas', desc: 'How to cluster behavior patterns into relatable target user archetypes.', dur: '8 mins', minutes: 8 },
@@ -239,6 +259,23 @@
                     matters: 'Wireframes act as visual architectural drafts. They ensure functional layout agreement before styling decisions are made.',
                     skills: ['Sketching', 'UI Skeleton Layout', 'Figma Basics', 'Interaction mapping'],
                     tip: 'Begin with paper and pen. Sketching fast ideas helps you iterate without getting locked into layout details.',
+                    theory: {
+                        title: 'The theory behind wireframing',
+                        phaseTitle: 'A practical wireframing process',
+                        introduction: 'A wireframe is a simplified blueprint for a screen or page. It focuses on structure, hierarchy, content, and interaction before colour, imagery, or polished visual styling distract from the underlying experience. It gives teams a fast way to discuss what belongs on a screen and how someone should move through it.',
+                        mindset: 'Keep the first version deliberately rough. A low-fidelity sketch makes it easier to change an idea, while a polished design can make teams reluctant to question it.',
+                        phases: [
+                            { title: 'Clarify the goal', text: 'Define the user task the screen needs to support and the most important action a person should be able to complete.' },
+                            { title: 'Prioritize the content', text: 'Decide what information is essential, secondary, or unnecessary for that task.' },
+                            { title: 'Sketch multiple layouts', text: 'Create several quick alternatives so you can compare different ways to arrange the same content.' },
+                            { title: 'Build the structure', text: 'Use simple boxes, labels, and placeholders to show hierarchy, navigation, controls, and likely interaction paths.' },
+                            { title: 'Review and iterate', text: 'Ask someone to walk through the task using the wireframe, then refine confusing steps before adding visual detail.' }
+                        ]
+                    },
+                    externalResources: [
+                        { label: 'Course link', title: 'Coursera: UI/UX Wireframing and Prototyping with Figma', description: 'A hands-on course that covers paper, low-fidelity, and mid-fidelity wireframes in Figma.', href: 'https://www.coursera.org/learn/uiux-wireframing-and-prototyping-with-figma' },
+                        { label: 'YouTube link', title: 'CareerFoundry: Create Your First Wireframe', description: 'A step-by-step UX tutorial for making paper and digital wireframes.', href: 'https://www.youtube.com/watch?v=qpH7-KFWZRI' }
+                    ],
                     resources: [
                         { id: 'wireframing-sketching', type: 'guide', title: 'Guide: Low-Fidelity Sketching Techniques', desc: 'Speed wireframing layout practices using basic boxes and shapes.', dur: '15 mins', minutes: 15 },
                         { id: 'wireframing-tools', type: 'read', title: 'Article: Digital Wireframing Tools Guide', desc: 'How to construct wireframe layouts efficiently in modern tools.', dur: '10 mins', minutes: 10 },
@@ -280,7 +317,8 @@
                 }
             };
 
-            const data = contentMap[conceptId] || contentMap['user-research'];
+            const selectedCareerConcept = window.LumaCareerExperience?.getConcept?.(conceptId);
+            const data = selectedCareerConcept || contentMap[conceptId] || contentMap['user-research'];
 
             // Render text content
             document.getElementById('concept-title').textContent = data.title;
@@ -298,7 +336,7 @@
                 theorySection.hidden = false;
                 const heading = document.createElement('h2');
                 heading.id = 'concept-theory-title';
-                heading.textContent = 'The theory behind design thinking';
+                heading.textContent = data.theory.title;
                 const introduction = document.createElement('p');
                 introduction.className = 'concept-theory-introduction';
                 introduction.textContent = data.theory.introduction;
@@ -306,7 +344,7 @@
                 mindset.className = 'concept-theory-mindset';
                 mindset.textContent = data.theory.mindset;
                 const phaseHeading = document.createElement('h3');
-                phaseHeading.textContent = 'The five phases';
+                phaseHeading.textContent = data.theory.phaseTitle;
                 const phases = document.createElement('ol');
                 phases.className = 'design-thinking-phases';
                 data.theory.phases.forEach((phase, index) => {
@@ -341,7 +379,7 @@
                     link.href = resource.href;
                     link.target = '_blank';
                     link.rel = 'noopener noreferrer';
-                    link.dataset.testid = `design-thinking-${resource.label.toLowerCase().replace(/\s+/g, '-')}`;
+                    link.dataset.testid = `${conceptId}-${resource.label.toLowerCase().replace(/\s+/g, '-')}`;
                     const label = document.createElement('span');
                     label.className = 'concept-external-resource-label';
                     label.textContent = resource.label;

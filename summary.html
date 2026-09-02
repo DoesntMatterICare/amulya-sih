@@ -460,7 +460,7 @@
                         </div>
                         <div style="border-left: 1px solid var(--color-neutral); padding-left: 15px;">
                             <span style="color: var(--color-text-muted); font-weight: 500;">Next Milestone:</span>
-                            <strong style="color: var(--color-text-heading); display: block; margin-top: 0.15rem;">Complete Wireframing</strong>
+                            <strong id="sum-next-milestone" style="color: var(--color-text-heading); display: block; margin-top: 0.15rem;">Complete Wireframing</strong>
                         </div>
                     </div>
                 </div>
@@ -718,13 +718,14 @@
                 if (ring) {
                     const radius = 54;
                     const circumference = 2 * Math.PI * radius; // 339.29
-                    const percent = 45;
+                    const percent = Number(document.getElementById('sum-circle-percentage')?.textContent.replace('%', '')) || 0;
                     const offset = circumference - (percent / 100 * circumference);
                     ring.style.strokeDashoffset = offset;
                 }
             }, 150);
         });
     </script>
+    <script src="career-experience.js"></script>
     <script src="supabase-features.js"></script>
     <script src="p0-features.js"></script>
     <script src="p0-ui.js"></script>
