@@ -110,8 +110,8 @@
             <div class="dash-premium-card" style="flex-direction: row; padding: 1.25rem 2rem; gap: 1.5rem; align-items: center; min-width: 340px; border-radius: 20px;">
                 <div style="flex-grow: 1;">
                     <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--color-secondary); letter-spacing: 1px;">Current Interest</span>
-                    <h4 style="font-family: var(--font-heading-2); font-weight: 700; font-size: 1.15rem; color: var(--color-text-heading); margin-top: 0.2rem;">UI/UX Design</h4>
-                    <p style="font-size: 0.82rem; color: var(--color-text-muted); margin-top: 0.4rem;">Week 3 of 8 • Est. Aug 28</p>
+                    <h4 id="journey-active-career" style="font-family: var(--font-heading-2); font-weight: 700; font-size: 1.15rem; color: var(--color-text-heading); margin-top: 0.2rem;">UI/UX Design</h4>
+                    <p id="journey-roadmap-caption" style="font-size: 0.82rem; color: var(--color-text-muted); margin-top: 0.4rem;">Week 3 of 8 • Est. Aug 28</p>
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem;">
                     <div id="journey-progress-percent" style="font-size: 1.5rem; font-weight: 700; color: var(--color-primary);">0%</div>
@@ -134,7 +134,7 @@
                         This Week's Learning Plan
                     </h3>
                     
-                    <div class="schedule-plan-list">
+                    <div class="schedule-plan-list" id="journey-weekly-plan">
                         <!-- Monday -->
                         <div class="schedule-plan-item" onclick="alert('Monday session: Completed!');">
                             <div class="schedule-item-left">
@@ -234,7 +234,7 @@
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 0.65rem;">
-                        <h4 id="journey-challenge-title" data-testid="journey-challenge-title" style="font-family: var(--font-body); font-weight: 700; font-size: 1.2rem; color: var(--color-text-heading);">Loading your challenge…</h4>
+                        <h4 id="journey-challenge-title" data-testid="journey-challenge-title" style="font-family: var(--font-body); font-weight: 700; font-size: 1.2rem; color: var(--color-text-heading);">Choose your next learning resource</h4>
                         <p id="journey-challenge-description" data-testid="journey-challenge-description" style="font-size: 0.95rem; line-height: 1.5; color: var(--color-text-body);">
                             Challenge details will match your active career path.
                         </p>
@@ -256,7 +256,7 @@
                     </div>
 
                     <div style="margin-top: 0.5rem;">
-                        <button class="btn btn-solid btn-full" id="btn-mark-challenge" data-testid="journey-open-challenge-button" disabled style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; box-shadow: var(--shadow-button); font-weight: 700;">Loading Challenge…</button>
+                        <button class="btn btn-solid btn-full" id="btn-mark-challenge" data-testid="journey-open-challenge-button" onclick="window.location.href='learning.html';" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: var(--color-white); border: none; box-shadow: var(--shadow-button); font-weight: 700;">Open Learning Hub</button>
                     </div>
                 </div>
 
@@ -272,7 +272,7 @@
                         Journey Milestones
                     </h3>
                     
-                    <div class="milestones-timeline-container">
+                    <div class="milestones-timeline-container" id="journey-milestones">
                         <!-- Milestone 1 -->
                         <div class="milestone-timeline-item">
                             <div class="milestone-timeline-node completed">
@@ -464,6 +464,7 @@
     </script>
 
     <!-- Main JS -->
+    <script src="career-experience.js"></script>
     <script src="roadmap-live.js"></script>
     <script src="p0-features.js"></script>
     <script src="p0-ui.js"></script>

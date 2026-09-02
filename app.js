@@ -482,7 +482,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const account = await window.LumaData?.loadAccountState();
             if (account?.profile?.assessment_completed) localStorage.setItem('luma_assessment_completed', 'true');
             else localStorage.removeItem('luma_assessment_completed');
-            if (account?.profile?.active_career_name) localStorage.setItem('luma_career_path', account.profile.active_career_name);
+            const hasExplicitCareerChoice = localStorage.getItem('luma_career_selection_source') === 'assessment-choice';
+            if (account?.profile?.active_career_name && !hasExplicitCareerChoice) {
+                localStorage.setItem('luma_career_path', account.profile.active_career_name);
+            }
             if (account?.roadmap) {
                 const plan = (account.roadmap.roadmap_days || []).sort((a, b) => a.day_number - b.day_number);
                 localStorage.setItem('luma_career_roadmap', JSON.stringify({ career: account.roadmap.career_name, plan }));
@@ -670,7 +673,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 10. REAL PROGRESS TRACKING & DASHBOARD STATE
     // --------------------------------------------------------------------------
     const progressStorageKey = 'luma_progress_state';
-    const resourceLibraryKey = 'luma_resource_library';
+    const resourceLibraryKey = () => {
+        const key = window.LumaCareerExperience?.getActiveKey?.() || 'uiux';
+        return `luma_resource_library:${key}`;
+    };
     const defaultResourceLibrary = [
         { id: 'design-thinking-guide', title: 'Guide: The 5 Phases of Design Thinking', minutes: 8, concept: 'design-thinking' },
         { id: 'design-thinking-brainstorm', title: 'Article: Brainstorming without Constraints', minutes: 7, concept: 'design-thinking' },
@@ -721,8 +727,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const getResourceLibrary = () => {
+        const selectedCareerLibrary = window.LumaCareerExperience?.getLocalLibrary?.();
+        const library = Array.isArray(selectedCareerLibrary) && selectedCareerLibrary.length
+            ? selectedCareerLibrary
+            : defaultResourceLibrary;
+        const storageKey = resourceLibraryKey();
         try {
-            const stored = JSON.parse(localStorage.getItem(resourceLibraryKey) || 'null');
+            const stored = JSON.parse(localStorage.getItem(storageKey) || 'null');
             if (Array.isArray(stored) && stored.length) {
                 return stored;
             }
@@ -730,15 +741,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Fall back to the built-in library below.
         }
 
-        localStorage.setItem(resourceLibraryKey, JSON.stringify(defaultResourceLibrary));
-        return defaultResourceLibrary;
+        localStorage.setItem(storageKey, JSON.stringify(library));
+        return library;
     };
 
     const updateLearningConceptTimeline = (state = getProgressState()) => {
         const holder = document.getElementById('learning-real-concepts');
         if (!holder) return;
         const resources = getResourceLibrary();
-        const conceptOrder = ['design-thinking', 'user-research', 'wireframing', 'information-architecture', 'visual-design', 'prototyping'];
+        const selectedCareer = window.LumaCareerExperience?.getActive?.();
+        const conceptOrder = selectedCareer?.isCustom
+            ? selectedCareer.concepts.map((concept) => concept.id)
+            : ['design-thinking', 'user-research', 'wireframing', 'information-architecture', 'visual-design', 'prototyping'];
         const concepts = conceptOrder.map((concept) => {
             const conceptResources = resources.filter((resource) => resource.concept === concept);
             return {
@@ -801,7 +815,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const resources = getResourceLibrary();
         const completedIds = new Set(state.completedResourceIds);
         const completedResources = resources.filter((resource) => completedIds.has(resource.id));
-        const completedCount = completedIds.size;
+        const completedCount = completedResources.length;
         const projectsCompleted = state.completedProjects;
         const challengesCompleted = state.completedChallenges;
         const totalCount = Math.max(resources.length, completedCount) + 2;
@@ -908,6 +922,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const dashboardStreak = document.getElementById('dash-streak-value');
         if (dashboardStreak) {
             dashboardStreak.textContent = `${summary.streak} Day${summary.streak === 1 ? '' : 's'}`;
+        }
+
+        const streakDots = [...document.querySelectorAll('.streak-days-row .streak-day-dot')];
+        if (streakDots.length) {
+            const todayIndex = (new Date().getDay() + 6) % 7;
+            const visibleStreakDays = Math.min(Math.max(Number(summary.streak) || 0, 0), todayIndex + 1);
+            const firstCompletedIndex = todayIndex - visibleStreakDays + 1;
+            streakDots.forEach((dot, index) => {
+                const isCompleted = index >= firstCompletedIndex && index <= todayIndex;
+                const shortLabel = dot.textContent.trim();
+                dot.classList.toggle('completed', isCompleted);
+                dot.title = `${shortLabel} ${isCompleted ? 'completed' : 'inactive'}`;
+                dot.setAttribute('aria-label', dot.title);
+            });
         }
 
         const dashboardReminder = document.getElementById('dash-reminder-text');
@@ -1060,6 +1088,74 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncWeeklyChecklist(state);
     };
 
+    const renderJourneySchedule = (experience) => {
+        const holder = document.getElementById('journey-weekly-plan');
+        if (!holder || !experience?.isCustom) return;
+        const completedIds = new Set(getProgressState().completedResourceIds);
+        const completedConcepts = new Set(experience.concepts
+            .filter((concept) => experience.resources
+                .filter((resource) => resource.concept === concept.id)
+                .every((resource) => completedIds.has(resource.id)))
+            .map((concept) => concept.id));
+        const currentIndex = experience.weeklyPlan.findIndex((item) => !item.concept || !completedConcepts.has(item.concept));
+        const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        holder.replaceChildren();
+        experience.weeklyPlan.forEach((item, index) => {
+            const status = item.concept && completedConcepts.has(item.concept) ? 'completed' : index === currentIndex ? 'current' : 'upcoming';
+            const row = document.createElement('a');
+            row.className = 'schedule-plan-item';
+            row.href = item.concept ? `learning-concept.html?concept=${encodeURIComponent(item.concept)}` : 'learning.html';
+            const left = document.createElement('div'); left.className = 'schedule-item-left';
+            const day = document.createElement('span'); day.className = 'schedule-item-day-tag'; day.textContent = dayNames[index];
+            const title = document.createElement('h4'); title.className = 'schedule-item-title'; title.textContent = item.title;
+            left.append(day, title);
+            const right = document.createElement('div'); right.className = 'schedule-item-right';
+            const duration = document.createElement('span'); duration.className = 'schedule-item-duration'; duration.textContent = `${item.minutes} mins`;
+            const indicator = document.createElement('div'); indicator.className = `schedule-item-indicator ${status}`;
+            right.append(duration, indicator); row.append(left, right); holder.appendChild(row);
+        });
+    };
+
+    const renderJourneyMilestones = (experience) => {
+        const holder = document.getElementById('journey-milestones');
+        if (!holder || !experience?.isCustom) return;
+        const completedIds = new Set(getProgressState().completedResourceIds);
+        const completedCount = experience.concepts.filter((concept) => experience.resources
+            .filter((resource) => resource.concept === concept.id)
+            .every((resource) => completedIds.has(resource.id))).length;
+        holder.replaceChildren();
+        experience.milestones.forEach((title, index) => {
+            const status = index < completedCount ? 'completed' : index === completedCount ? 'current' : 'upcoming';
+            const item = document.createElement('div'); item.className = 'milestone-timeline-item';
+            const node = document.createElement('div'); node.className = `milestone-timeline-node ${status}`;
+            if (status === 'completed') node.textContent = '✓';
+            const details = document.createElement('div'); details.className = 'milestone-timeline-details';
+            const heading = document.createElement('span'); heading.className = `milestone-timeline-title ${status === 'upcoming' ? '' : status}`; heading.textContent = status === 'current' ? `Currently: ${title}` : title;
+            const subtext = document.createElement('span'); subtext.className = 'milestone-timeline-subtext'; subtext.textContent = status === 'completed' ? 'Completed' : status === 'current' ? 'Active now' : 'Upcoming';
+            details.append(heading, subtext); item.append(node, details); holder.appendChild(item);
+        });
+    };
+
+    const applyCareerExperience = () => {
+        const experience = window.LumaCareerExperience?.getActive?.();
+        if (!experience?.isCustom) return;
+
+        const journeyTitle = document.getElementById('journey-active-career');
+        if (journeyTitle) journeyTitle.textContent = experience.title;
+        const journeyCaption = document.getElementById('journey-roadmap-caption');
+        if (journeyCaption) journeyCaption.textContent = `Week 1 of ${experience.weeks} • Your selected learning path`;
+
+        renderJourneySchedule(experience);
+        renderJourneyMilestones(experience);
+
+        const summaryTitle = document.getElementById('sum-career-title');
+        if (summaryTitle) summaryTitle.textContent = experience.title;
+        const summaryMilestone = document.getElementById('sum-next-milestone');
+        if (summaryMilestone) summaryMilestone.textContent = experience.nextMilestone;
+        const summaryText = document.getElementById('sum-ai-summary-text');
+        if (summaryText) summaryText.textContent = experience.summary;
+    };
+
     window.completeLearningResource = (resourceId, title, minutes, concept = 'general') => {
         const state = getProgressState();
         if (!state.completedResourceIds.includes(resourceId)) {
@@ -1106,6 +1202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         window.addEventListener('luma:resource-completed', () => {
             updateProgressUI(getProgressState());
+            applyCareerExperience();
         });
 
         const checklistItems = document.querySelectorAll('#dash-plan-checklist .plan-checkbox-item');
@@ -1121,6 +1218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     initializeProgressTracking();
+    applyCareerExperience();
 
     const hydrateSupabaseState = async () => {
         if (!window.LumaData || localStorage.getItem('luma_logged_in') !== 'true') return;
@@ -1130,10 +1228,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 localStorage.setItem(progressStorageKey, JSON.stringify(account.progress));
                 updateProgressUI(account.progress);
             }
+            const hasExplicitCareerChoice = localStorage.getItem('luma_career_selection_source') === 'assessment-choice';
             if (account.assessment) {
                 localStorage.setItem('luma_assessment_answers', JSON.stringify(account.assessment.answers || {}));
                 localStorage.setItem('luma_ai_recommendations', JSON.stringify(account.assessment.raw_result || {}));
-                if (account.assessment.selected_path) localStorage.setItem('luma_career_path', account.assessment.selected_path);
+                if (account.assessment.selected_path && !hasExplicitCareerChoice) {
+                    localStorage.setItem('luma_career_path', account.assessment.selected_path);
+                }
             }
             if (account.profile?.assessment_completed) localStorage.setItem('luma_assessment_completed', 'true');
             if (account.roadmap) {

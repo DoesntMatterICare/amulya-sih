@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const skillSelect = document.getElementById('learning-skill-filter');
     const searchInput = document.getElementById('learning-resource-search');
     const status = document.getElementById('learning-library-status');
+    const selectedExperience = window.LumaCareerExperience?.getActive?.();
     let mode = 'personalized';
     let searchTimer;
 
@@ -17,18 +18,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const meta = document.createElement('div');
         meta.className = 'learning-library-card-meta';
-        meta.textContent = `${resource.resource_type} • ${resource.minutes} mins • ${resource.difficulty}`;
+        meta.textContent = `${resource.resource_type || resource.type || 'Resource'} • ${resource.minutes} mins • ${resource.difficulty || 'Beginner'}`;
 
         const title = document.createElement('h3');
         title.textContent = resource.title;
         const description = document.createElement('p');
-        description.textContent = resource.description || resource.concept;
+        description.textContent = resource.description || resource.desc || resource.concept;
 
         const tags = document.createElement('div');
         tags.className = 'learning-library-tags';
-        [...resource.careers.slice(0, 2), ...resource.skills.slice(0, 3)].forEach((tag) => {
+        const resourceTags = [...(resource.careers || []), ...(resource.skills || resource.tags || [])];
+        resourceTags.slice(0, 5).forEach((tag) => {
             const chip = document.createElement('span');
-            chip.textContent = tag.name;
+            chip.textContent = tag.name || tag;
             tags.appendChild(chip);
         });
 
@@ -49,6 +51,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             complete.disabled = true;
             complete.textContent = 'Saving…';
             try {
+                if (resource.local) {
+                    if (typeof window.completeLearningResource !== 'function') throw new Error('Progress tracking is not available yet.');
+                    window.completeLearningResource(resource.id, resource.title, Number(resource.minutes || 0), resource.concept);
+                    complete.classList.add('completed');
+                    complete.textContent = 'Completed ✓';
+                    status.textContent = 'Saved on this device.';
+                    return;
+                }
                 await window.LumaData.completeResource(resource.id);
                 complete.classList.add('completed');
                 complete.textContent = 'Completed ✓';
@@ -70,6 +80,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         card.append(meta, title, description, tags, actions);
         return card;
     };
+
+    if (selectedExperience?.isCustom) {
+        const completedIds = (() => {
+            try {
+                const progress = JSON.parse(localStorage.getItem('luma_progress_state') || '{}');
+                return new Set(Array.isArray(progress.completedResourceIds) ? progress.completedResourceIds : []);
+            } catch (error) {
+                return new Set();
+            }
+        })();
+        const localResources = selectedExperience.resources.map((resource) => ({
+            ...resource,
+            local: true,
+            completed: completedIds.has(resource.id),
+            careers: [{ name: selectedExperience.title }],
+            difficulty: 'Beginner'
+        }));
+        grid.replaceChildren(...localResources.map(resourceCard));
+        status.textContent = `${localResources.length} resources for ${selectedExperience.title}`;
+        careerSelect.disabled = true;
+        skillSelect.disabled = true;
+        searchInput.disabled = true;
+        modeButtons.forEach((button) => {
+            button.disabled = button.dataset.learningMode === 'browse';
+        });
+        return;
+    }
 
     const render = async () => {
         status.textContent = 'Loading resources…';

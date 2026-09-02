@@ -299,7 +299,7 @@
             
             <div class="recommended-paths-stack">
                 <!-- Recommended 1: UI/UX Designer -->
-                <div class="path-recommendation-card selected" onclick="selectPath(this, 'UI/UX Design');">
+                <div class="path-recommendation-card selected" onclick="selectPath(this, 'UI/UX Designer');">
                     <div class="path-icon-container">🎨</div>
                     <div class="path-details-box">
                         <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.25rem; margin: 0; color: var(--color-text-heading);">UI/UX Designer</h3>
@@ -316,17 +316,17 @@
                     </div>
                 </div>
 
-                <!-- Recommended 2: Graphic Designer -->
-                <div class="path-recommendation-card" onclick="selectPath(this, 'Graphic Design');">
-                    <div class="path-icon-container">🖋️</div>
+                <!-- Recommended 2: Product Manager -->
+                <div class="path-recommendation-card" onclick="selectPath(this, 'Product Manager');">
+                    <div class="path-icon-container">P</div>
                     <div class="path-details-box">
-                        <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.25rem; margin: 0; color: var(--color-text-heading);">Graphic Designer</h3>
-                        <p style="font-size: 0.95rem; margin: 0; line-height: 1.5;">Transform ideas into engaging visuals through branding, illustration and digital design.</p>
+                        <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.25rem; margin: 0; color: var(--color-text-heading);">Product Manager</h3>
+                        <p style="font-size: 0.95rem; margin: 0; line-height: 1.5;">Guide product strategy by connecting customer needs, priorities, and delivery decisions.</p>
                         <div class="path-meta-row">
-                            <span class="path-meta-tag match">91% Match</span>
+                            <span class="path-meta-tag match">88% Match</span>
                             <span class="path-meta-tag">4–6 Months</span>
                             <span class="path-meta-tag">Beginner Friendly</span>
-                            <span class="path-meta-tag" style="background-color: rgba(167,117,201,0.05); color: var(--color-primary);">Branding, Illustration, Layouts</span>
+                            <span class="path-meta-tag" style="background-color: rgba(167,117,201,0.05); color: var(--color-primary);">Discovery, Prioritization, Roadmaps</span>
                         </div>
                     </div>
                     <div class="path-select-wrapper">
@@ -334,17 +334,17 @@
                     </div>
                 </div>
 
-                <!-- Recommended 3: Full Stack Developer -->
-                <div class="path-recommendation-card" onclick="selectPath(this, 'Full Stack Development');">
-                    <div class="path-icon-container">💻</div>
+                <!-- Recommended 3: Machine Learning Engineer -->
+                <div class="path-recommendation-card" onclick="selectPath(this, 'Machine Learning Engineer');">
+                    <div class="path-icon-container">ML</div>
                     <div class="path-details-box">
-                        <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.25rem; margin: 0; color: var(--color-text-heading);">Full Stack Developer</h3>
-                        <p style="font-size: 0.95rem; margin: 0; line-height: 1.5;">Build complete web applications using modern front-end and back-end technologies.</p>
+                        <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.25rem; margin: 0; color: var(--color-text-heading);">Machine Learning Engineer</h3>
+                        <p style="font-size: 0.95rem; margin: 0; line-height: 1.5;">Build and evaluate data-driven models with Python, experiments, and responsible deployment.</p>
                         <div class="path-meta-row">
-                            <span class="path-meta-tag match">87% Match</span>
+                            <span class="path-meta-tag match">82% Match</span>
                             <span class="path-meta-tag">9–12 Months</span>
                             <span class="path-meta-tag">Intermediate</span>
-                            <span class="path-meta-tag" style="background-color: rgba(167,117,201,0.05); color: var(--color-primary);">HTML/CSS, React, Node.js, Database</span>
+                            <span class="path-meta-tag" style="background-color: rgba(167,117,201,0.05); color: var(--color-primary);">Python, Data, Evaluation</span>
                         </div>
                     </div>
                     <div class="path-select-wrapper">
@@ -352,7 +352,7 @@
                     </div>
                 </div>
             </div>
-            <input type="hidden" id="selected-path-name" value="UI/UX Design">
+            <input type="hidden" id="selected-path-name" value="UI/UX Designer">
         </section>
 
         <!-- SECTION 3: YOUR PICKS (dynamically read interests) -->
@@ -397,26 +397,29 @@
             const aiResult = (() => {
                 try { return JSON.parse(localStorage.getItem('luma_ai_recommendations') || 'null'); } catch (error) { return null; }
             })();
+            const supportedPath = (value = '') => {
+                const path = String(value).toLowerCase();
+                if (path.includes('product')) return 'Product Manager';
+                if (path.includes('machine learning') || path.includes('artificial intelligence') || path.includes('ai engineering')) return 'Machine Learning Engineer';
+                return 'UI/UX Designer';
+            };
             if (aiResult) {
                 const insightItems = document.querySelectorAll('.insight-item span:last-child');
                 (aiResult.insights || []).slice(0, insightItems.length).forEach((insight, index) => { insightItems[index].textContent = insight; });
                 const pathCards = document.querySelectorAll('.path-recommendation-card');
-                (aiResult.recommendations || []).forEach((recommendation, index) => {
-                    const card = pathCards[index];
-                    if (!card) return;
-                    const title = card.querySelector('h3');
-                    const description = card.querySelector('p');
+                const recommendationsByPath = new Map((aiResult.recommendations || []).map((recommendation) => [supportedPath(recommendation.career), recommendation]));
+                pathCards.forEach((card) => {
+                    const title = card.querySelector('h3')?.textContent.trim() || '';
+                    const recommendation = recommendationsByPath.get(title);
+                    if (!recommendation) return;
                     const match = card.querySelector('.path-meta-tag.match');
-                    const skills = card.querySelector('.path-meta-row .path-meta-tag:last-child');
-                    if (title) title.textContent = recommendation.career;
-                    if (description) description.textContent = recommendation.rationale;
-                    if (match) match.textContent = `${recommendation.match_percent}% Match`;
-                    if (skills) skills.textContent = (recommendation.skills || []).join(', ');
+                    if (match && Number.isFinite(Number(recommendation.match_percent))) match.textContent = `${recommendation.match_percent}% Match`;
                     card.setAttribute('data-ai-career', recommendation.career);
                 });
                 if (aiResult.selected_path) {
-                    document.getElementById('selected-path-name').value = aiResult.selected_path;
-                    matchRationale.textContent = (aiResult.recommendations || []).find(item => item.career === aiResult.selected_path)?.rationale || matchRationale.textContent;
+                    const selectedPath = supportedPath(aiResult.selected_path);
+                    document.getElementById('selected-path-name').value = selectedPath;
+                    matchRationale.textContent = recommendationsByPath.get(selectedPath)?.rationale || matchRationale.textContent;
                 }
             }
 
@@ -424,7 +427,9 @@
                 let descText = `Your answers show a strong combination of curiosity, ambition and problem-solving. Based on these traits, exploring the ${name} landscape is likely to be an engaging and rewarding field for you.`;
                 if (name.includes('UI/UX') || name.includes('Design')) {
                     descText = `Your answers show a strong combination of creativity, curiosity and problem-solving. You enjoy learning through practical experiences and naturally gravitate toward visual thinking. Based on these traits, ${name} is likely to be an engaging and rewarding field for you.`;
-                } else if (name.includes('AI') || name.includes('Artificial') || name.includes('Data Science')) {
+                } else if (name.includes('Product')) {
+                    descText = `Your answers show curiosity about user needs, trade-offs, and building useful outcomes with other people. ${name} gives you a practical way to turn those signals into thoughtful product decisions.`;
+                } else if (name.includes('AI') || name.includes('Artificial') || name.includes('Machine Learning') || name.includes('Data Science')) {
                     descText = `Your answers highlight a strong affinity for logical workflows and computational problem-solving. Since you enjoy exploring new technology models and automated analytics, ${name} offers the ideal environment for your skills.`;
                 }
                 matchRationale.textContent = descText;
@@ -451,9 +456,6 @@
                             picksContainer.appendChild(card);
                         });
                         
-                        // Select default career match based on first interest
-                        const firstInterest = answers.interests[0];
-                        updateSelectedCareer(firstInterest);
                     }
                 } catch(e) {
                     console.error("Error parsing assessment details", e);
@@ -487,21 +489,8 @@
                 pickCards.forEach(p => p.classList.remove('selected'));
                 card.classList.add('selected');
 
-                const name = card.textContent.trim();
-                document.getElementById('selected-path-name').value = name;
-
-                // Sync with recommended paths cards if exists
-                const pathCards = document.querySelectorAll('.path-recommendation-card');
-                pathCards.forEach(pc => {
-                    const title = pc.querySelector('h3').textContent.trim();
-                    if (title.toLowerCase() === name.toLowerCase()) {
-                        pc.classList.add('selected');
-                    } else {
-                        pc.classList.remove('selected');
-                    }
-                });
-
-                updateRationale(name);
+                const selectedPath = document.getElementById('selected-path-name').value;
+                updateRationale(selectedPath);
             };
 
             // Start Journey CTA Click Handler
@@ -525,6 +514,7 @@
                     };
 
                     localStorage.setItem('luma_career_path', selectedPath);
+                    localStorage.setItem('luma_career_selection_source', 'assessment-choice');
                     localStorage.setItem('luma_assessment_completed', 'true');
                     localStorage.setItem('luma_recommendations', JSON.stringify(recommendations));
                     const aiResult = JSON.parse(localStorage.getItem('luma_ai_recommendations') || '{}');
